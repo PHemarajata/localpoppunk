@@ -1,0 +1,5 @@
+2025-06-23 16:02:10	2.2s	modest_davinci	ERR	a41e5c5b304164ba1213ac2d2047e28a	9c5da035-b59a-40a7-86c5-52cbc453b438	nextflow run poppunk_subsample_snp.nf -c nextflow.config
+2025-06-23 16:03:13	22.6s	confident_wiles	ERR	a41e5c5b304164ba1213ac2d2047e28a	59763922-7afe-4c5f-8df3-90c5c1ef6888	nextflow run poppunk_subsample_snp.nf -c nextflow.config
+2025-06-23 16:10:24	2.5s	cheesy_coulomb	ERR	69ff4bcebe72f6ada5cfecca2719a6df	59763922-7afe-4c5f-8df3-90c5c1ef6888	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-23 16:11:51	31.5s	evil_elion	ERR	69ff4bcebe72f6ada5cfecca2719a6df	59763922-7afe-4c5f-8df3-90c5c1ef6888	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-23 16:20:45	30s	admiring_stallman	ERR	ee0ee3276a2f677b910143a0d964632b	59763922-7afe-4c5f-8df3-90c5c1ef6888	nextflow run poppunk_subsample_snp.nf -resume
