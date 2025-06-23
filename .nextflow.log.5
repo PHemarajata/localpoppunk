@@ -1,0 +1,110 @@
+Jun-23 16:38:58.056 [main] DEBUG nextflow.cli.Launcher - $> nextflow run poppunk_subsample_snp.nf -resume
+Jun-23 16:38:58.154 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.04.4
+Jun-23 16:38:58.183 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/peerah/.nextflow/plugins; core-plugins: nf-amazon@2.15.0,nf-azure@1.16.0,nf-cloudcache@0.4.3,nf-codecommit@0.2.3,nf-console@1.2.1,nf-google@1.21.0,nf-k8s@1.0.0,nf-tower@1.11.3,nf-wave@1.12.1
+Jun-23 16:38:58.208 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Jun-23 16:38:58.209 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Jun-23 16:38:58.212 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Jun-23 16:38:58.227 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Jun-23 16:38:58.254 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/peerah/localpoppunk/nextflow.config
+Jun-23 16:38:58.257 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/peerah/localpoppunk/nextflow.config
+Jun-23 16:38:58.323 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/peerah/.nextflow/secrets/store.json
+Jun-23 16:38:58.327 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@3a60c416] - activable => nextflow.secret.LocalSecretsProvider@3a60c416
+Jun-23 16:38:58.335 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Jun-23 16:38:58.936 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
+Jun-23 16:38:58.959 [main] DEBUG nextflow.cli.CmdRun - Launching `poppunk_subsample_snp.nf` [serene_majorana] DSL2 - revision: 50cba409e0
+Jun-23 16:38:58.961 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Jun-23 16:38:58.961 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Jun-23 16:38:59.030 [main] DEBUG nextflow.Session - Session UUID: e6ef6728-4379-4412-84b1-d3e212314554
+Jun-23 16:38:59.031 [main] DEBUG nextflow.Session - Run name: serene_majorana
+Jun-23 16:38:59.032 [main] DEBUG nextflow.Session - Executor pool size: 64
+Jun-23 16:38:59.043 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Jun-23 16:38:59.051 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=192; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Jun-23 16:38:59.075 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 25.04.4 build 5950
+  Created: 16-06-2025 14:23 UTC 
+  System: Linux 6.1.0-37-cloud-amd64
+  Runtime: Groovy 4.0.26 on OpenJDK 64-Bit Server VM 17.0.10+7
+  Encoding: UTF-8 (UTF-8)
+  Process: 312195@instance-20250623-122625 [10.128.0.26]
+  CPUs: 64 - Mem: 409.2 GB (391.6 GB) - Swap: 0 (0)
+Jun-23 16:38:59.116 [main] DEBUG nextflow.Session - Work-dir: /home/peerah/localpoppunk/work [ext2/ext3]
+Jun-23 16:38:59.117 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/peerah/localpoppunk/bin
+Jun-23 16:38:59.130 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Jun-23 16:38:59.143 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Jun-23 16:38:59.180 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Jun-23 16:38:59.216 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Jun-23 16:38:59.230 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 65; maxThreads: 1000
+Jun-23 16:38:59.311 [main] DEBUG nextflow.Session - Session start
+Jun-23 16:38:59.539 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+Jun-23 16:38:59.553 [main] ERROR nextflow.cli.Launcher - Script compilation error
+- file : /home/peerah/localpoppunk/poppunk_subsample_snp.nf
+- cause: token recognition error at: '(' @ line 296, column 36.
+           echo "Found cluster file: $(ls poppunk_fit/*_clusters.csv)"
+                                      ^
+
+1 error
+
+nextflow.exception.ScriptCompilationException: Script compilation error
+- file : /home/peerah/localpoppunk/poppunk_subsample_snp.nf
+- cause: token recognition error at: '(' @ line 296, column 36.
+           echo "Found cluster file: $(ls poppunk_fit/*_clusters.csv)"
+                                      ^
+
+1 error
+
+	at nextflow.script.parser.v1.ScriptLoaderV1.parse0(ScriptLoaderV1.groovy:204)
+	at nextflow.script.parser.v1.ScriptLoaderV1.parse(ScriptLoaderV1.groovy:215)
+	at nextflow.script.parser.v1.ScriptLoaderV1.parse(ScriptLoaderV1.groovy)
+	at nextflow.script.ScriptRunner.parseScript(ScriptRunner.groovy:232)
+	at nextflow.script.ScriptRunner.execute(ScriptRunner.groovy:137)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:379)
+	at nextflow.cli.Launcher.run(Launcher.groovy:513)
+	at nextflow.cli.Launcher.main(Launcher.groovy:673)
+Caused by: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script_7d4e986d37db3e89: 296: token recognition error at: '(' @ line 296, column 36.
+           echo "Found cluster file: $(ls poppunk_fit/*_clusters.csv)"
+                                      ^
+
+1 error
+
+	at org.codehaus.groovy.control.ErrorCollector.failIfErrors(ErrorCollector.java:292)
+	at org.codehaus.groovy.control.ErrorCollector.addFatalError(ErrorCollector.java:148)
+	at org.apache.groovy.parser.antlr4.AstBuilder.collectSyntaxError(AstBuilder.java:4730)
+	at org.apache.groovy.parser.antlr4.AstBuilder.access$100(AstBuilder.java:169)
+	at org.apache.groovy.parser.antlr4.AstBuilder$3.syntaxError(AstBuilder.java:4741)
+	at groovyjarjarantlr4.v4.runtime.ProxyErrorListener.syntaxError(ProxyErrorListener.java:44)
+	at groovyjarjarantlr4.v4.runtime.Lexer.notifyListeners(Lexer.java:381)
+	at groovyjarjarantlr4.v4.runtime.Lexer.nextToken(Lexer.java:145)
+	at groovyjarjarantlr4.v4.runtime.BufferedTokenStream.fetch(BufferedTokenStream.java:170)
+	at groovyjarjarantlr4.v4.runtime.BufferedTokenStream.sync(BufferedTokenStream.java:153)
+	at groovyjarjarantlr4.v4.runtime.BufferedTokenStream.consume(BufferedTokenStream.java:137)
+	at groovyjarjarantlr4.v4.runtime.atn.ParserATNSimulator.execATN(ParserATNSimulator.java:854)
+	at groovyjarjarantlr4.v4.runtime.atn.ParserATNSimulator.execDFA(ParserATNSimulator.java:543)
+	at groovyjarjarantlr4.v4.runtime.atn.ParserATNSimulator.adaptivePredict(ParserATNSimulator.java:408)
+	at groovyjarjarantlr4.v4.runtime.atn.ParserATNSimulator.adaptivePredict(ParserATNSimulator.java:356)
+	at org.apache.groovy.parser.antlr4.GroovyParser.commandExpression(GroovyParser.java:9702)
+	at org.apache.groovy.parser.antlr4.GroovyParser.statementExpression(GroovyParser.java:8233)
+	at org.apache.groovy.parser.antlr4.GroovyParser.statement(GroovyParser.java:7078)
+	at org.apache.groovy.parser.antlr4.GroovyParser.scriptStatement(GroovyParser.java:517)
+	at org.apache.groovy.parser.antlr4.GroovyParser.scriptStatements(GroovyParser.java:427)
+	at org.apache.groovy.parser.antlr4.GroovyParser.compilationUnit(GroovyParser.java:363)
+	at org.apache.groovy.parser.antlr4.AstBuilder.buildCST(AstBuilder.java:243)
+	at org.apache.groovy.parser.antlr4.AstBuilder.buildCST(AstBuilder.java:221)
+	at org.apache.groovy.parser.antlr4.AstBuilder.buildAST(AstBuilder.java:262)
+	at org.apache.groovy.parser.antlr4.Antlr4ParserPlugin.buildAST(Antlr4ParserPlugin.java:58)
+	at org.codehaus.groovy.control.SourceUnit.buildAST(SourceUnit.java:256)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1845)
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762)
+	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:663)
+	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:365)
+	at groovy.lang.GroovyClassLoader.lambda$parseClass$2(GroovyClassLoader.java:314)
+	at org.codehaus.groovy.runtime.memoize.StampedCommonCache.compute(StampedCommonCache.java:163)
+	at org.codehaus.groovy.runtime.memoize.StampedCommonCache.getAndPut(StampedCommonCache.java:154)
+	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:314)
+	at groovy.lang.GroovyShell.parseClass(GroovyShell.java:572)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:585)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:639)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:643)
+	at nextflow.script.parser.v1.ScriptLoaderV1.parse0(ScriptLoaderV1.groovy:183)
+	... 7 common frames omitted

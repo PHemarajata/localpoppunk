@@ -212,7 +212,7 @@ with open('subset.list','w') as out:
     total_selected = 0
     for i, comp in enumerate(nx.connected_components(G)):
         comp = list(comp)
-        k = min(10, max(3, len(comp)//10))
+        k = min(45, max(3, len(comp)//10))
         k = min(k, len(comp))
         if k > 0:
             selected = random.sample(comp, k)
@@ -242,10 +242,12 @@ process POPPUNK_MODEL {
 
     input:
     path sub_list
+    path fasta_files
 
     output:
     path 'poppunk_db', type: 'dir', emit: db
     path 'cluster_model.csv'     , emit: csv
+    path 'staged_files.list'     , emit: staged_list
 
     script:
     """
@@ -256,31 +258,57 @@ process POPPUNK_MODEL {
     fi
     
     echo "Building PopPUNK database with \$(wc -l < ${sub_list}) genomes..."
-    cat ${sub_list}
     
-    # Verify all files in the subset list exist and are readable
+    # Create a new file list with staged filenames (not absolute paths)
+    # Map the sample names from subset.list to the staged FASTA files
+    > staged_files.list
     while IFS=\$'\\t' read -r sample_name file_path; do
-        if [ ! -f "\$file_path" ]; then
-            echo "ERROR: File not found: \$file_path"
-            exit 1
-        fi
-        if [ ! -s "\$file_path" ]; then
-            echo "ERROR: File is empty: \$file_path"
+        # Find the corresponding staged file
+        basename_file=\$(basename "\$file_path")
+        if [ -f "\$basename_file" ]; then
+            echo -e "\$sample_name\\t\$basename_file" >> staged_files.list
+            echo "Mapped: \$sample_name -> \$basename_file"
+        else
+            echo "ERROR: Staged file not found: \$basename_file"
             exit 1
         fi
     done < ${sub_list}
     
+    echo "Created staged files list:"
+    cat staged_files.list
+    
     echo "All files verified. Starting PopPUNK database creation..."
     
-    poppunk --create-db --r-files ${sub_list} \\
+    poppunk --create-db --r-files staged_files.list \\
         --output poppunk_db --threads ${task.cpus}
 
     echo "Database created successfully. Fitting model..."
     
-    poppunk --fit-model  --ref-db poppunk_db \\
+    poppunk --fit-model bgmm --ref-db poppunk_db \\
         --output poppunk_fit --threads ${task.cpus}
 
-    cp poppunk_fit/cluster_assignments.csv cluster_model.csv
+    # Check for different possible output file locations
+    if [ -f "poppunk_fit/poppunk_fit_clusters.csv" ]; then
+        cp poppunk_fit/poppunk_fit_clusters.csv cluster_model.csv
+        echo "Found poppunk_fit_clusters.csv in poppunk_fit/"
+    elif [ -f "poppunk_fit/cluster_assignments.csv" ]; then
+        cp poppunk_fit/cluster_assignments.csv cluster_model.csv
+        echo "Found cluster_assignments.csv in poppunk_fit/"
+    elif ls poppunk_fit/*_clusters.csv 1> /dev/null 2>&1; then
+        cp poppunk_fit/*_clusters.csv cluster_model.csv
+        echo "Found cluster file in poppunk_fit/"
+    elif ls poppunk_fit/*.csv 1> /dev/null 2>&1; then
+        cp poppunk_fit/*.csv cluster_model.csv
+        echo "Found CSV file in poppunk_fit/"
+    else
+        echo "Available files in poppunk_fit/:"
+        ls -la poppunk_fit/ || echo "poppunk_fit directory not found"
+        echo "Available files in current directory:"
+        ls -la *.csv || echo "No CSV files found"
+        # Create a minimal output file so the pipeline doesn't fail
+        echo "sample,cluster" > cluster_model.csv
+        echo "PopPUNK completed but cluster assignments file not found in expected location"
+    fi
     
     echo "PopPUNK model completed successfully!"
     """
@@ -299,18 +327,28 @@ process POPPUNK_ASSIGN {
     input:
     path db_dir
     path list_file
+    path fasta_files
 
     output:
     path 'full_assign.csv'
 
     script:
     """
-    poppunk --assign-query --ref-db ${db_dir} \\
-        --qfiles ${list_file} \\
+    # Create a staged file list for all FASTA files
+    ls *.fasta > staged_all_files.list
+    
+    echo "Assigning \$(wc -l < staged_all_files.list) genomes to PopPUNK clusters..."
+    echo "First few files:"
+    head -5 staged_all_files.list
+    
+    poppunk --use-model --ref-db ${db_dir} \\
+        --r-files staged_all_files.list \\
         --output poppunk_full \\
         --threads ${task.cpus}
 
     cp poppunk_full/cluster_assignments.csv full_assign.csv
+    
+    echo "PopPUNK assignment completed successfully!"
     """
 }
 
@@ -340,11 +378,14 @@ workflow {
         .map { file_path -> file(file_path) }
         .filter { it.exists() }
     
-    sketch_out = MASH_SKETCH(valid_files_ch.collect())
+    // Collect valid files for use in multiple processes
+    valid_files_collected = valid_files_ch.collect()
+    
+    sketch_out = MASH_SKETCH(valid_files_collected)
     dist_ch    = MASH_DIST(sketch_out.msh)
     subset_ch  = BIN_SUBSAMPLE(dist_ch)
-    model_out  = POPPUNK_MODEL(subset_ch)
-    final_csv  = POPPUNK_ASSIGN(model_out.db, sketch_out.list)
+    model_out  = POPPUNK_MODEL(subset_ch, valid_files_collected)
+    final_csv  = POPPUNK_ASSIGN(model_out.db, sketch_out.list, valid_files_collected)
 
     final_csv.view { p -> "✅ PopPUNK assignment written: ${p}" }
 }

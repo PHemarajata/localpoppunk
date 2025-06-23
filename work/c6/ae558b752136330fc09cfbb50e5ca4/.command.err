@@ -1,0 +1,41 @@
+PopPUNK (POPulation Partitioning Using Nucleotide Kmers)
+	(with backend: sketchlib v2.1.1
+	 sketchlib: /opt/conda/envs/poppunk-env/lib/python3.10/site-packages/pp_sketchlib.cpython-310-x86_64-linux-gnu.so)
+
+Graph-tools OpenMP parallelisation enabled: with 48 threads
+Mode: Building new database from input sequences
+Sketching 10 genomes using 10 thread(s)
+Progress (CPU): 0 / 10Progress (CPU): 10 / 10
+Writing sketches to file
+Calculating random match chances using Monte Carlo
+Calculating distances using 48 thread(s)
+Progress (CPU): 0.0%Progress (CPU): 2.2%Progress (CPU): 4.4%Progress (CPU): 6.6%Progress (CPU): 8.8%Progress (CPU): 11.0%Progress (CPU): 13.2%Progress (CPU): 15.4%Progress (CPU): 17.6%Progress (CPU): 19.8%Progress (CPU): 22.0%Progress (CPU): 24.2%Progress (CPU): 26.4%Progress (CPU): 28.6%Progress (CPU): 30.8%Progress (CPU): 33.0%Progress (CPU): 35.2%Progress (CPU): 37.4%Progress (CPU): 39.6%Progress (CPU): 41.8%Progress (CPU): 44.0%Progress (CPU): 46.2%Progress (CPU): 48.4%Progress (CPU): 50.6%Progress (CPU): 52.8%Progress (CPU): 55.0%Progress (CPU): 57.2%Progress (CPU): 59.4%Progress (CPU): 61.6%Progress (CPU): 63.8%Progress (CPU): 66.0%Progress (CPU): 68.2%Progress (CPU): 70.4%Progress (CPU): 72.6%Progress (CPU): 74.8%Progress (CPU): 77.0%Progress (CPU): 79.2%Progress (CPU): 81.4%Progress (CPU): 83.6%Progress (CPU): 85.8%Progress (CPU): 88.0%Progress (CPU): 90.2%Progress (CPU): 92.4%Progress (CPU): 94.6%Progress (CPU): 96.8%Progress (CPU): 99.0%Progress (CPU): 100.0%
+
+Done
+usage: poppunk [-h]
+               (--create-db | --qc-db | --fit-model {bgmm,dbscan,refine,lineage,threshold} | --use-model)
+               [--ref-db REF_DB] [--r-files R_FILES] [--distances DISTANCES]
+               [--external-clustering EXTERNAL_CLUSTERING] [--output OUTPUT]
+               [--plot-fit PLOT_FIT] [--overwrite] [--graph-weights]
+               [--min-k MIN_K] [--max-k MAX_K] [--k-step K_STEP]
+               [--sketch-size SKETCH_SIZE] [--codon-phased]
+               [--min-kmer-count MIN_KMER_COUNT] [--exact-count]
+               [--strand-preserved] [--qc-keep]
+               [--remove-samples REMOVE_SAMPLES] [--retain-failures]
+               [--max-a-dist MAX_A_DIST] [--max-pi-dist MAX_PI_DIST]
+               [--max-zero-dist MAX_ZERO_DIST] [--type-isolate TYPE_ISOLATE]
+               [--length-sigma LENGTH_SIGMA]
+               [--length-range LENGTH_RANGE LENGTH_RANGE] [--prop-n PROP_N]
+               [--upper-n UPPER_N] [--K K] [--D D]
+               [--min-cluster-prop MIN_CLUSTER_PROP] [--threshold THRESHOLD]
+               [--pos-shift POS_SHIFT] [--neg-shift NEG_SHIFT]
+               [--manual-start MANUAL_START] [--model-dir MODEL_DIR]
+               [--score-idx {0,1,2}] [--betweenness-sample BETWEENNESS_SAMPLE]
+               [--unconstrained | --multi-boundary MULTI_BOUNDARY | --indiv-refine {both,core,accessory}]
+               [--ranks RANKS] [--count-unique-distances] [--reciprocal-only]
+               [--max-search-depth MAX_SEARCH_DEPTH]
+               [--write-lineage-networks] [--use-accessory]
+               [--threads THREADS] [--gpu-sketch] [--gpu-dist] [--gpu-graph]
+               [--deviceid DEVICEID] [--no-plot] [--no-local] [--version]
+               [--citation]
+poppunk: error: argument --fit-model: expected one argument
