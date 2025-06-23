@@ -1,0 +1,123 @@
+Building PopPUNK database with 45 genomes...
+Mapped: IP-0025-7_S5_L001-SPAdes -> IP-0025-7_S5_L001-SPAdes.fasta
+Mapped: IP-0097-6_S9_L001-SPAdes -> IP-0097-6_S9_L001-SPAdes.fasta
+Mapped: GCA_963561565.1 -> GCA_963561565.1.fasta
+Mapped: IP-0146-1_S6_L001-SPAdes -> IP-0146-1_S6_L001-SPAdes.fasta
+Mapped: IE-0021_S7-SPAdes -> IE-0021_S7-SPAdes.fasta
+Mapped: GCA_963571365.1 -> GCA_963571365.1.fasta
+Mapped: IP-0032-3_S2_L001-SPAdes -> IP-0032-3_S2_L001-SPAdes.fasta
+Mapped: IP-0064-6_S9_L001-SPAdes -> IP-0064-6_S9_L001-SPAdes.fasta
+Mapped: IP-0013-3_S4_L001-SPAdes -> IP-0013-3_S4_L001-SPAdes.fasta
+Mapped: IP-0017-4_S8_L001-SPAdes -> IP-0017-4_S8_L001-SPAdes.fasta
+Mapped: IP-0062-0_S7_L001-SPAdes -> IP-0062-0_S7_L001-SPAdes.fasta
+Mapped: IP-0100-8_S1_L001-SPAdes -> IP-0100-8_S1_L001-SPAdes.fasta
+Mapped: GCA_963561735.1 -> GCA_963561735.1.fasta
+Mapped: ERS012308 -> ERS012308.fasta
+Mapped: Burkholderia_pseudomallei_4802_GCF_003268115.1_Viet_Nam -> Burkholderia_pseudomallei_4802_GCF_003268115.1_Viet_Nam.fasta
+Mapped: IP-0152-9_S2_L001-SPAdes -> IP-0152-9_S2_L001-SPAdes.fasta
+Mapped: ERS012324 -> ERS012324.fasta
+Mapped: Burkholderia_pseudomallei_64W_S75_GCF_014712815.1_Laos -> Burkholderia_pseudomallei_64W_S75_GCF_014712815.1_Laos.fasta
+Mapped: IE-0009_S3_L001-SPAdes -> IE-0009_S3_L001-SPAdes.fasta
+Mapped: IP-0024-0_S4_L001-SPAdes -> IP-0024-0_S4_L001-SPAdes.fasta
+Mapped: Burkholderia_pseudomallei_46W_S66_GCF_014712945.1_Laos -> Burkholderia_pseudomallei_46W_S66_GCF_014712945.1_Laos.fasta
+Mapped: IE-0011_S5_L001-SPAdes -> IE-0011_S5_L001-SPAdes.fasta
+Mapped: ERS012317 -> ERS012317.fasta
+Mapped: ERS008824 -> ERS008824.fasta
+Mapped: IP-0077-8_S11_L001-SPAdes -> IP-0077-8_S11_L001-SPAdes.fasta
+Mapped: GCA_963568005.1 -> GCA_963568005.1.fasta
+Mapped: ERS008822 -> ERS008822.fasta
+Mapped: IP-0004-2_S4_L001-SPAdes -> IP-0004-2_S4_L001-SPAdes.fasta
+Mapped: IP-0155-2_S5_L001-SPAdes -> IP-0155-2_S5_L001-SPAdes.fasta
+Mapped: GCA_963568055.1 -> GCA_963568055.1.fasta
+Mapped: ERS012327 -> ERS012327.fasta
+Mapped: IP-0179-2_S4-SPAdes -> IP-0179-2_S4-SPAdes.fasta
+Mapped: GCA_963561895.1 -> GCA_963561895.1.fasta
+Mapped: IE-0012_S6_L001-SPAdes -> IE-0012_S6_L001-SPAdes.fasta
+Mapped: IP-0028-1_S8_L001-SPAdes -> IP-0028-1_S8_L001-SPAdes.fasta
+Mapped: IP-0154-5_S4_L001-SPAdes -> IP-0154-5_S4_L001-SPAdes.fasta
+Mapped: IP-0045-5_S5_L001-SPAdes -> IP-0045-5_S5_L001-SPAdes.fasta
+Mapped: IP-0052-1_S2_L001-SPAdes -> IP-0052-1_S2_L001-SPAdes.fasta
+Mapped: ERS012331 -> ERS012331.fasta
+Mapped: IP-0039-8_S9_L001-SPAdes -> IP-0039-8_S9_L001-SPAdes.fasta
+Mapped: GCA_963566455.1 -> GCA_963566455.1.fasta
+Mapped: IP-0149-5_S9_L001-SPAdes -> IP-0149-5_S9_L001-SPAdes.fasta
+Mapped: IE-0018_S12_L001-SPAdes -> IE-0018_S12_L001-SPAdes.fasta
+Mapped: ERS008825 -> ERS008825.fasta
+Mapped: IP-0157-8_S7_L001-SPAdes -> IP-0157-8_S7_L001-SPAdes.fasta
+Created staged files list:
+IP-0025-7_S5_L001-SPAdes	IP-0025-7_S5_L001-SPAdes.fasta
+IP-0097-6_S9_L001-SPAdes	IP-0097-6_S9_L001-SPAdes.fasta
+GCA_963561565.1	GCA_963561565.1.fasta
+IP-0146-1_S6_L001-SPAdes	IP-0146-1_S6_L001-SPAdes.fasta
+IE-0021_S7-SPAdes	IE-0021_S7-SPAdes.fasta
+GCA_963571365.1	GCA_963571365.1.fasta
+IP-0032-3_S2_L001-SPAdes	IP-0032-3_S2_L001-SPAdes.fasta
+IP-0064-6_S9_L001-SPAdes	IP-0064-6_S9_L001-SPAdes.fasta
+IP-0013-3_S4_L001-SPAdes	IP-0013-3_S4_L001-SPAdes.fasta
+IP-0017-4_S8_L001-SPAdes	IP-0017-4_S8_L001-SPAdes.fasta
+IP-0062-0_S7_L001-SPAdes	IP-0062-0_S7_L001-SPAdes.fasta
+IP-0100-8_S1_L001-SPAdes	IP-0100-8_S1_L001-SPAdes.fasta
+GCA_963561735.1	GCA_963561735.1.fasta
+ERS012308	ERS012308.fasta
+Burkholderia_pseudomallei_4802_GCF_003268115.1_Viet_Nam	Burkholderia_pseudomallei_4802_GCF_003268115.1_Viet_Nam.fasta
+IP-0152-9_S2_L001-SPAdes	IP-0152-9_S2_L001-SPAdes.fasta
+ERS012324	ERS012324.fasta
+Burkholderia_pseudomallei_64W_S75_GCF_014712815.1_Laos	Burkholderia_pseudomallei_64W_S75_GCF_014712815.1_Laos.fasta
+IE-0009_S3_L001-SPAdes	IE-0009_S3_L001-SPAdes.fasta
+IP-0024-0_S4_L001-SPAdes	IP-0024-0_S4_L001-SPAdes.fasta
+Burkholderia_pseudomallei_46W_S66_GCF_014712945.1_Laos	Burkholderia_pseudomallei_46W_S66_GCF_014712945.1_Laos.fasta
+IE-0011_S5_L001-SPAdes	IE-0011_S5_L001-SPAdes.fasta
+ERS012317	ERS012317.fasta
+ERS008824	ERS008824.fasta
+IP-0077-8_S11_L001-SPAdes	IP-0077-8_S11_L001-SPAdes.fasta
+GCA_963568005.1	GCA_963568005.1.fasta
+ERS008822	ERS008822.fasta
+IP-0004-2_S4_L001-SPAdes	IP-0004-2_S4_L001-SPAdes.fasta
+IP-0155-2_S5_L001-SPAdes	IP-0155-2_S5_L001-SPAdes.fasta
+GCA_963568055.1	GCA_963568055.1.fasta
+ERS012327	ERS012327.fasta
+IP-0179-2_S4-SPAdes	IP-0179-2_S4-SPAdes.fasta
+GCA_963561895.1	GCA_963561895.1.fasta
+IE-0012_S6_L001-SPAdes	IE-0012_S6_L001-SPAdes.fasta
+IP-0028-1_S8_L001-SPAdes	IP-0028-1_S8_L001-SPAdes.fasta
+IP-0154-5_S4_L001-SPAdes	IP-0154-5_S4_L001-SPAdes.fasta
+IP-0045-5_S5_L001-SPAdes	IP-0045-5_S5_L001-SPAdes.fasta
+IP-0052-1_S2_L001-SPAdes	IP-0052-1_S2_L001-SPAdes.fasta
+ERS012331	ERS012331.fasta
+IP-0039-8_S9_L001-SPAdes	IP-0039-8_S9_L001-SPAdes.fasta
+GCA_963566455.1	GCA_963566455.1.fasta
+IP-0149-5_S9_L001-SPAdes	IP-0149-5_S9_L001-SPAdes.fasta
+IE-0018_S12_L001-SPAdes	IE-0018_S12_L001-SPAdes.fasta
+ERS008825	ERS008825.fasta
+IP-0157-8_S7_L001-SPAdes	IP-0157-8_S7_L001-SPAdes.fasta
+All files verified. Starting PopPUNK database creation...
+Database created successfully. Fitting model...
+Model fitting completed. Copying fitted model files to database directory...
+Copying fitted model files to poppunk_db directory...
+✓ Created poppunk_db_fit.pkl from poppunk_fit_fit.pkl
+✓ Created poppunk_db_fit.npz from poppunk_fit_fit.npz
+Files in poppunk_db after copying:
+total 6284
+drwxr-xr-x 2 root root    4096 Jun 23 17:19 .
+drwxr-xr-x 4 1003 1004   32768 Jun 23 17:19 ..
+-rw-r--r-- 1 root root    8048 Jun 23 17:19 poppunk_db.dists.npy
+-rw-r--r-- 1 root root    1128 Jun 23 17:19 poppunk_db.dists.pkl
+-rw-r--r-- 1 root root 4081448 Jun 23 17:19 poppunk_db.h5
+-rw-r--r-- 1 root root  244156 Jun 23 17:19 poppunk_db_distanceDistribution.png
+-rw-r--r-- 1 root root    1632 Jun 23 17:19 poppunk_db_fit.npz
+-rw-r--r-- 1 root root    1742 Jun 23 17:19 poppunk_db_fit.pkl
+-rw-r--r-- 1 root root     521 Jun 23 17:19 poppunk_fit.refs
+-rw-r--r-- 1 root root    1648 Jun 23 17:19 poppunk_fit.refs.dists.npy
+-rw-r--r-- 1 root root     584 Jun 23 17:19 poppunk_fit.refs.dists.pkl
+-rw-r--r-- 1 root root 1812736 Jun 23 17:19 poppunk_fit.refs.h5
+-rw-r--r-- 1 root root     381 Jun 23 17:19 poppunk_fit.refs_graph.gt
+-rw-r--r-- 1 root root  157251 Jun 23 17:19 poppunk_fit_DPGMM_fit.png
+-rw-r--r-- 1 root root   29478 Jun 23 17:19 poppunk_fit_DPGMM_fit_contours.pdf
+-rw-r--r-- 1 root root    1126 Jun 23 17:19 poppunk_fit_clusters.csv
+-rw-r--r-- 1 root root    1632 Jun 23 17:19 poppunk_fit_fit.npz
+-rw-r--r-- 1 root root    1742 Jun 23 17:19 poppunk_fit_fit.pkl
+-rw-r--r-- 1 root root     656 Jun 23 17:19 poppunk_fit_graph.gt
+-rw-r--r-- 1 root root    1356 Jun 23 17:19 poppunk_fit_unword_clusters.csv
+✓ Found fitted model file: poppunk_db_fit.pkl
+Found poppunk_fit_clusters.csv in poppunk_fit/
+PopPUNK model completed successfully!

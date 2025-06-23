@@ -287,7 +287,44 @@ process POPPUNK_MODEL {
     poppunk --fit-model bgmm --ref-db poppunk_db \\
         --output poppunk_fit --threads ${task.cpus}
 
-    # Check for different possible output file locations
+    echo "Model fitting completed. Copying fitted model files to database directory..."
+    
+    # Copy all fitted model files from poppunk_fit to poppunk_db
+    # This ensures the database directory contains both the database and the fitted model
+    if [ -d "poppunk_fit" ]; then
+        echo "Copying fitted model files to poppunk_db directory..."
+        
+        # Copy all files from poppunk_fit to poppunk_db
+        cp poppunk_fit/* poppunk_db/ 2>/dev/null || echo "Some files could not be copied"
+        
+        # The critical step: rename the fitted model file to match what PopPUNK expects
+        if [ -f "poppunk_db/poppunk_fit_fit.pkl" ]; then
+            cp poppunk_db/poppunk_fit_fit.pkl poppunk_db/poppunk_db_fit.pkl
+            echo "✓ Created poppunk_db_fit.pkl from poppunk_fit_fit.pkl"
+        fi
+        
+        # Also copy the npz file with the correct name
+        if [ -f "poppunk_db/poppunk_fit_fit.npz" ]; then
+            cp poppunk_db/poppunk_fit_fit.npz poppunk_db/poppunk_db_fit.npz
+            echo "✓ Created poppunk_db_fit.npz from poppunk_fit_fit.npz"
+        fi
+        
+        echo "Files in poppunk_db after copying:"
+        ls -la poppunk_db/
+        
+        # Verify the critical model file exists
+        if [ -f "poppunk_db/poppunk_db_fit.pkl" ]; then
+            echo "✓ Found fitted model file: poppunk_db_fit.pkl"
+        else
+            echo "⚠ Model .pkl file not found. Available files:"
+            ls -la poppunk_db/*.pkl 2>/dev/null || echo "No .pkl files found"
+        fi
+    else
+        echo "ERROR: poppunk_fit directory not found"
+        exit 1
+    fi
+
+    # Check for different possible output file locations for cluster assignments
     if [ -f "poppunk_fit/poppunk_fit_clusters.csv" ]; then
         cp poppunk_fit/poppunk_fit_clusters.csv cluster_model.csv
         echo "Found poppunk_fit_clusters.csv in poppunk_fit/"

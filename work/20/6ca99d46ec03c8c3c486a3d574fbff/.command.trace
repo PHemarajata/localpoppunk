@@ -1,0 +1,17 @@
+nextflow.trace/v2
+realtime=14154
+%cpu=9842
+cpu_model=Intel(R) Xeon(R) CPU @ 2.30GHz
+rchar=429524271
+wchar=8592977
+syscr=43777
+syscw=1978
+read_bytes=0
+write_bytes=8609792
+%mem=2
+vmem=11064472
+rss=763628
+peak_vmem=11215768
+peak_rss=763628
+vol_ctxt=381
+inv_ctxt=43
