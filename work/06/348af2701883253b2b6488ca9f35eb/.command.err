@@ -1,0 +1,24 @@
+PopPUNK (POPulation Partitioning Using Nucleotide Kmers)
+	(with backend: sketchlib v2.1.1
+	 sketchlib: /opt/conda/envs/poppunk-env/lib/python3.10/site-packages/pp_sketchlib.cpython-310-x86_64-linux-gnu.so)
+
+Graph-tools OpenMP parallelisation enabled: with 48 threads
+Mode: Using previous model with a reference database
+
+Loading BGMM 2D Gaussian model
+Completed model loading
+Loaded previous model of type: bgmm
+Assigning distances with BGMM model
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 78.22it/s]
+Network summary:
+	Components				1
+	Density					0.1313
+	Transitivity				0.3875
+	Mean betweenness			0.8836
+	Weighted-mean betweenness		0.8836
+	Score					0.3366
+	Score (w/ betweenness)			0.0392
+	Score (w/ weighted-betweenness)		0.0392
+Removing 32 sequences
+
+Done

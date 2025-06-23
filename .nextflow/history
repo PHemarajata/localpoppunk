@@ -1,1 +1,4 @@
 2025-06-23 17:18:15	1m 3s	deadly_williams	ERR	8ad2af1c43f3bb9d37c1f8fde3b23b49	de00e730-c364-4201-935a-b78d1dc8ca69	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-23 17:27:44	7.7s	determined_liskov	OK	92541c4c6b4c3ea7f6f5887782831f36	de00e730-c364-4201-935a-b78d1dc8ca69	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-23 17:51:03	3.4s	focused_wilson	OK	92541c4c6b4c3ea7f6f5887782831f36	de00e730-c364-4201-935a-b78d1dc8ca69	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-23 17:52:19	1m 1s	romantic_khorana	OK	92541c4c6b4c3ea7f6f5887782831f36	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf

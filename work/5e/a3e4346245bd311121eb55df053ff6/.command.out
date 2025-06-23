@@ -1,0 +1,9 @@
+Sketching 450 valid FASTA files...
+First few files to be processed:
+Burkholderia_pseudomallei_134K_GCF_009830075.1_Thailand.fasta
+Burkholderia_pseudomallei_134_GCF_009830095.1_Thailand.fasta
+Burkholderia_pseudomallei_1701_GCF_003268105.1_Viet_Nam.fasta
+Burkholderia_pseudomallei_2002721684_GCF_002110925.1_USA_Texas.fasta
+Burkholderia_pseudomallei_2002734728_GCF_002111105.1_USA_California.fasta
+All files verified. Starting MASH sketching...
+MASH sketching completed successfully!
