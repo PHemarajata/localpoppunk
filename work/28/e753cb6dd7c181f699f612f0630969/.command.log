@@ -1,0 +1,37 @@
+Assigning 450 genomes to PopPUNK clusters...
+Total valid files from input: 450
+First few files to be assigned:
+IP-0050-5_S10_L001-SPAdes	IP-0050-5_S10_L001-SPAdes.fasta
+IP-0100-8_S1_L001-SPAdes	IP-0100-8_S1_L001-SPAdes.fasta
+Burkholderia_pseudomallei_44W_S64_GCF_014713025.1_Laos	Burkholderia_pseudomallei_44W_S64_GCF_014713025.1_Laos.fasta
+IP-0201-4_S6-SPAdes	IP-0201-4_S6-SPAdes.fasta
+GCA_963565015.1	GCA_963565015.1.fasta
+Last few files to be assigned:
+Burkholderia_pseudomallei_316a_GCF_001980725.1_Thailand	Burkholderia_pseudomallei_316a_GCF_001980725.1_Thailand.fasta
+ERS012327	ERS012327.fasta
+IE-0019_S5-SPAdes	IE-0019_S5-SPAdes.fasta
+Burkholderia_pseudomallei_2010007509_GCF_002111145.1_USA_Arizona_ex_Costa_Rica	Burkholderia_pseudomallei_2010007509_GCF_002111145.1_USA_Arizona_ex_Costa_Rica.fasta
+IP-0149-5_S9_L001-SPAdes	IP-0149-5_S9_L001-SPAdes.fasta
+Verifying staged files exist...
+All files verified. Starting PopPUNK assignment...
+PopPUNK: assign
+	(with backend: sketchlib v2.1.4
+	 sketchlib: /opt/conda/envs/poppunk-env/lib/python3.12/site-packages/pp_sketchlib.cpython-312-x86_64-linux-gnu.so)
+Mode: Assigning clusters of query sequences
+
+
+Graph-tools OpenMP parallelisation enabled: with 48 threads
+Sketching 450 genomes using 48 thread(s)
+Progress (CPU): 0 / 450Progress (CPU): 1 / 450Progress (CPU): 49 / 450Progress (CPU): 65 / 450Progress (CPU): 113 / 450Progress (CPU): 159 / 450Progress (CPU): 177 / 450Progress (CPU): 225 / 450Progress (CPU): 254 / 450Progress (CPU): 289 / 450Progress (CPU): 331 / 450Progress (CPU): 450 / 450
+Writing sketches to file
+Running QC on sketches
+Using proportion cutoff for ambiguous bases: 0.1
+Using standard deviation for length cutoff: 2
+19 samples failed:
+Burkholderia_pseudomallei_619s004_GCF_001212405_2_Malaysia,IP-0099-2_S11_L001-SPAdes,Burkholderia_pseudomallei_134K_GCF_009830075_1_Thailand,Burkholderia_pseudomallei_284_GCF_025847905_1_Viet_Nam,Burkholderia_pseudomallei_ABCPW_1_GCF_000774965_1_Australia,Burkholderia_pseudomallei_BDD_GCF_000756905_1_Australia_Townsville_Queensland,Burkholderia_pseudomallei_ABCPW_91_GCF_000774405_1_Australia,ERS013345,IE-0001_S6_L001-SPAdes,IP-0043-0_S3_L001-SPAdes,Burkholderia_pseudomallei_2011756296_GCF_002110985_1_USA_Puerto_Rico,Burkholderia_pseudomallei_ABCPW_30_GCF_000774495_1_Australia,IP-0002-6_S2_L001-SPAdes,ERS012359,IP-0019-0_S10_L001-SPAdes,IP-0009-1_S9_L001-SPAdes,Burkholderia_pseudomallei_134_GCF_009830095_1_Thailand,IP-0157-8_S7_L001-SPAdes,IP-0113-1_S4_L001-SPAdes
+Loading BGMM 2D Gaussian model
+Completed model loading
+/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/assign.py:303: UserWarning: Names of queries match names in reference database
+
+  isolateClustering = assign_query_hdf5(dbFuncs,
+Not running -- change names or add --write-references to override this behaviour

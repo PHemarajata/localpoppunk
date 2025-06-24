@@ -412,7 +412,7 @@ process POPPUNK_ASSIGN {
         --db ${db_dir} \\
         --output poppunk_full \\
         --threads ${task.cpus} \\
-        ${params.poppunk_stable ? '--stable' : ''} \\
+        --stable ${params.poppunk_stable} \\
         --run-qc \\
         --max-zero-dist ${params.poppunk_max_zero_dist} \\
         --max-merge ${params.poppunk_max_merge} \\
