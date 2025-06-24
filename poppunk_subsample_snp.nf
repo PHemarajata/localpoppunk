@@ -212,7 +212,7 @@ with open('subset.list','w') as out:
     total_selected = 0
     for i, comp in enumerate(nx.connected_components(G)):
         comp = list(comp)
-        # Very generous subsampling: take at least 30% of each component, minimum 25, maximum 200
+        # More generous subsampling: take at least 30% of each component, minimum 25, maximum 200
         k = min(200, max(25, int(len(comp) * 0.3)))
         k = min(k, len(comp))
         if k > 0:
@@ -407,31 +407,47 @@ process POPPUNK_ASSIGN {
     
     echo "All files verified. Starting PopPUNK assignment..."
     
-    # Use PopPUNK 2.7.x distance-matrix-free mode and stable nomenclature
-    poppunk --use-model --ref-db ${db_dir} \\
-        --r-files staged_all_files.list \\
+    # Use PopPUNK 2.7.x poppunk_assign with integrated QC and stable nomenclature
+    poppunk_assign --query staged_all_files.list \\
+        --db ${db_dir} \\
         --output poppunk_full \\
         --threads ${task.cpus} \\
-        ${params.poppunk_stable ? '--stable' : ''}
+        ${params.poppunk_stable ? '--stable' : ''} \\
+        --run-qc \\
+        --max-zero-dist ${params.poppunk_max_zero_dist} \\
+        --max-merge ${params.poppunk_max_merge} \\
+        --length-sigma ${params.poppunk_length_sigma}
 
-    # Check for different possible output file locations for cluster assignments
+    # Check for poppunk_assign output files (different naming convention)
     if [ -f "poppunk_full/poppunk_full_clusters.csv" ]; then
         cp poppunk_full/poppunk_full_clusters.csv full_assign.csv
         echo "Found poppunk_full_clusters.csv in poppunk_full/"
+    elif [ -f "poppunk_full_clusters.csv" ]; then
+        cp poppunk_full_clusters.csv full_assign.csv
+        echo "Found poppunk_full_clusters.csv in current directory"
     elif [ -f "poppunk_full/cluster_assignments.csv" ]; then
         cp poppunk_full/cluster_assignments.csv full_assign.csv
         echo "Found cluster_assignments.csv in poppunk_full/"
+    elif [ -f "cluster_assignments.csv" ]; then
+        cp cluster_assignments.csv full_assign.csv
+        echo "Found cluster_assignments.csv in current directory"
     elif ls poppunk_full/*_clusters.csv 1> /dev/null 2>&1; then
         cp poppunk_full/*_clusters.csv full_assign.csv
         echo "Found cluster file in poppunk_full/"
+    elif ls *_clusters.csv 1> /dev/null 2>&1; then
+        cp *_clusters.csv full_assign.csv
+        echo "Found cluster file in current directory"
     elif ls poppunk_full/*.csv 1> /dev/null 2>&1; then
         cp poppunk_full/*.csv full_assign.csv
         echo "Found CSV file in poppunk_full/"
+    elif ls *.csv 1> /dev/null 2>&1; then
+        cp *.csv full_assign.csv
+        echo "Found CSV file in current directory"
     else
         echo "Available files in poppunk_full/:"
-        ls -la poppunk_full/ || echo "poppunk_full directory not found"
+        ls -la poppunk_full/ 2>/dev/null || echo "poppunk_full directory not found"
         echo "Available files in current directory:"
-        ls -la *.csv || echo "No CSV files found"
+        ls -la *.csv 2>/dev/null || echo "No CSV files found"
         # Create a minimal output file so the pipeline doesn't fail
         echo "sample,cluster" > full_assign.csv
         echo "PopPUNK completed but cluster assignments file not found in expected location"
@@ -450,50 +466,7 @@ process POPPUNK_ASSIGN {
 }
 
 /* ──────────────────────────────────────────────────────────
- * 6 ▸ PopPUNK QC using 2.7.x features
- * ────────────────────────────────────────────────────────── */
-process POPPUNK_QC {
-    tag          'poppunk_qc'
-    container    'staphb/poppunk:2.7.5'
-    publishDir   "${params.resultsDir}/poppunk_qc", mode: 'copy'
-
-    input:
-    path db_dir
-
-    output:
-    path 'qc_report.txt', emit: qc_report
-    path 'qc_plots', type: 'dir', emit: qc_plots, optional: true
-
-    script:
-    """
-    echo "Running PopPUNK 2.7.x QC analysis..."
-    
-    # Run QC with enhanced reporting
-    poppunk --qc --ref-db ${db_dir} \\
-        --output qc_analysis \\
-        --threads ${task.cpus}
-    
-    # Generate QC report
-    echo "PopPUNK 2.7.x QC Analysis Report" > qc_report.txt
-    echo "=================================" >> qc_report.txt
-    echo "Generated on: \$(date)" >> qc_report.txt
-    echo "" >> qc_report.txt
-    
-    # Copy QC outputs
-    if [ -d "qc_analysis" ]; then
-        cp -r qc_analysis qc_plots
-        echo "QC analysis completed successfully" >> qc_report.txt
-        echo "QC plots and data available in qc_plots directory" >> qc_report.txt
-    else
-        echo "QC analysis completed but no output directory found" >> qc_report.txt
-    fi
-    
-    echo "PopPUNK QC completed!"
-    """
-}
-
-/* ──────────────────────────────────────────────────────────
- * 7 ▸ Generate summary report
+ * 6 ▸ Generate summary report
  * ────────────────────────────────────────────────────────── */
 process SUMMARY_REPORT {
     tag          'summary_report'
@@ -612,9 +585,6 @@ workflow {
     subset_ch  = BIN_SUBSAMPLE(dist_ch)
     model_out  = POPPUNK_MODEL(subset_ch, valid_files_collected)
     final_csv  = POPPUNK_ASSIGN(model_out.db, validation_out.valid_list, valid_files_collected)
-    
-    // Run QC analysis
-    qc_out = POPPUNK_QC(model_out.db)
 
     // Generate summary report
     SUMMARY_REPORT(final_csv, validation_out.report)
