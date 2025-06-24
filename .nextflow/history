@@ -15,3 +15,4 @@
 2025-06-24 05:12:08	1m 16s	hungry_rosalind	ERR	9cb9f517e10daf2b235ff42459b5fd19	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf
 2025-06-24 05:37:11	32.5s	festering_volhard	ERR	c6b91bf912f1f509e2a377b2ae665b31	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf -resume
 2025-06-24 05:51:43	22.1s	high_jepsen	ERR	ed5665727a2b0d840475cd20293c14a7	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 06:01:31	22.3s	tiny_church	ERR	cc5a50f6ee0fce284b6d8b0b4e594d89	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf -resume

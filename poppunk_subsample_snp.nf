@@ -414,6 +414,8 @@ process POPPUNK_ASSIGN {
         --threads ${task.cpus} \\
         --stable ${params.poppunk_stable} \\
         --run-qc \\
+        --write-references \\
+        ${params.poppunk_retain_failures ? '--retain-failures' : ''} \\
         --max-zero-dist ${params.poppunk_max_zero_dist} \\
         --max-merge ${params.poppunk_max_merge} \\
         --length-sigma ${params.poppunk_length_sigma}
