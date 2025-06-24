@@ -1,0 +1,794 @@
+#!/bin/bash
+### ---
+### name: 'POPPUNK_ASSIGN (poppunk_assign)'
+### container: 'staphb/poppunk:2.7.5'
+### outputs:
+### - 'full_assign.csv'
+### ...
+set -e
+set -u
+NXF_DEBUG=${NXF_DEBUG:=0}; [[ $NXF_DEBUG > 1 ]] && set -x
+NXF_ENTRY=${1:-nxf_main}
+
+nxf_tree() {
+    local pid=$1
+
+    declare -a ALL_CHILDREN
+    while read P PP;do
+        ALL_CHILDREN[$PP]+=" $P"
+    done < <(ps -e -o pid= -o ppid=)
+
+    pstat() {
+        local x_pid=$1
+        local STATUS=$(2> /dev/null < /proc/$1/status grep -E 'Vm|ctxt')
+
+        if [ $? = 0 ]; then
+        local  x_vsz=$(echo "$STATUS" | grep VmSize | awk '{print $2}' || echo -n '0')
+        local  x_rss=$(echo "$STATUS" | grep VmRSS | awk '{print $2}' || echo -n '0')
+        local x_peak=$(echo "$STATUS" | grep -E 'VmPeak|VmHWM' | sed 's/^.*:\s*//' | sed 's/[\sa-zA-Z]*$//' | tr '\n' ' ' || echo -n '0 0')
+        local x_pmem=$(awk -v rss=$x_rss -v mem_tot=$mem_tot 'BEGIN {printf "%.0f", rss/mem_tot*100*10}' || echo -n '0')
+        local vol_ctxt=$(echo "$STATUS" | grep '\bvoluntary_ctxt_switches' | awk '{print $2}' || echo -n '0')
+        local inv_ctxt=$(echo "$STATUS" | grep '\bnonvoluntary_ctxt_switches' | awk '{print $2}' || echo -n '0')
+        cpu_stat[x_pid]="$x_pid $x_pmem $x_vsz $x_rss $x_peak $vol_ctxt $inv_ctxt"
+        fi
+    }
+
+    pwalk() {
+        pstat $1
+        for i in ${ALL_CHILDREN[$1]:=}; do pwalk $i; done
+    }
+
+    pwalk $1
+}
+
+nxf_stat() {
+    cpu_stat=()
+    nxf_tree $1
+
+    declare -a sum=(0 0 0 0 0 0 0 0)
+    local pid
+    local i
+    for pid in "${!cpu_stat[@]}"; do
+        local row=(${cpu_stat[pid]})
+        [ $NXF_DEBUG = 1 ] && echo "++ stat mem=${row[*]}"
+        for i in "${!row[@]}"; do
+        if [ $i != 0 ]; then
+            sum[i]=$((sum[i]+row[i]))
+        fi
+        done
+    done
+
+    [ $NXF_DEBUG = 1 ] && echo -e "++ stat SUM=${sum[*]}"
+
+    for i in {1..7}; do
+        if [ ${sum[i]} -lt ${cpu_peak[i]} ]; then
+            sum[i]=${cpu_peak[i]}
+        else
+            cpu_peak[i]=${sum[i]}
+        fi
+    done
+
+    [ $NXF_DEBUG = 1 ] && echo -e "++ stat PEAK=${sum[*]}\n"
+    nxf_stat_ret=(${sum[*]})
+}
+
+nxf_mem_watch() {
+    set -o pipefail
+    local pid=$1
+    local trace_file=.command.trace
+    local count=0;
+    declare -a cpu_stat=(0 0 0 0 0 0 0 0)
+    declare -a cpu_peak=(0 0 0 0 0 0 0 0)
+    local mem_tot=$(< /proc/meminfo grep MemTotal | awk '{print $2}')
+    local timeout
+    local DONE
+    local STOP=''
+
+    [ $NXF_DEBUG = 1 ] && nxf_sleep 0.2 && ps fx
+
+    while true; do
+        nxf_stat $pid
+        if [ $count -lt 10 ]; then timeout=1;
+        elif [ $count -lt 120 ]; then timeout=5;
+        else timeout=30;
+        fi
+        read -t $timeout -r DONE || true
+        [[ $DONE ]] && break
+        if [ ! -e /proc/$pid ]; then
+            [ ! $STOP ] && STOP=$(nxf_date)
+            [ $(($(nxf_date)-STOP)) -gt 10000 ] && break
+        fi
+        count=$((count+1))
+    done
+
+    printf "%s\n" \
+        "%mem=${nxf_stat_ret[1]}" \
+        "vmem=${nxf_stat_ret[2]}" \
+        "rss=${nxf_stat_ret[3]}" \
+        "peak_vmem=${nxf_stat_ret[4]}" \
+        "peak_rss=${nxf_stat_ret[5]}" \
+        "vol_ctxt=${nxf_stat_ret[6]}" \
+        "inv_ctxt=${nxf_stat_ret[7]}" >> "$trace_file" || >&2 echo "Error: Failed to append to file: $trace_file"
+}
+
+nxf_write_trace() {
+    printf "%s\n" \
+        "nextflow.trace/v2" \
+        "realtime=$wall_time" \
+        "%cpu=$ucpu" \
+        "cpu_model=$cpu_model" \
+        "rchar=${io_stat1[0]}" \
+        "wchar=${io_stat1[1]}" \
+        "syscr=${io_stat1[2]}" \
+        "syscw=${io_stat1[3]}" \
+        "read_bytes=${io_stat1[4]}" \
+        "write_bytes=${io_stat1[5]}" >| "$trace_file" || >&2 echo "Error: Failed to write to file: $trace_file"
+}
+
+nxf_trace_mac() {
+    local start_millis=$(nxf_date)
+
+    /bin/bash -ue /home/peerah/localpoppunk/work/a7/044dccbb426476a668503cc0955367/.command.sh
+
+    local end_millis=$(nxf_date)
+    local wall_time=$((end_millis-start_millis))
+    local ucpu=''
+    local cpu_model=''
+    local io_stat1=('' '' '' '' '' '')
+    nxf_write_trace
+}
+
+nxf_fd() {
+    local FD=11
+    while [ -e /proc/$$/fd/$FD ]; do FD=$((FD+1)); done
+    echo $FD
+}
+
+nxf_trace_linux() {
+    local pid=$$
+    command -v ps &>/dev/null || { >&2 echo "Command 'ps' required by nextflow to collect task metrics cannot be found"; exit 1; }
+    local num_cpus=$(< /proc/cpuinfo grep '^processor' -c)
+    local cpu_model=$(< /proc/cpuinfo grep '^model name' | head -n 1 | awk 'BEGIN{FS="\t: "} { print $2 }')
+    local tot_time0=$(grep '^cpu ' /proc/stat | awk '{sum=$2+$3+$4+$5+$6+$7+$8+$9; printf "%.0f",sum}')
+    local cpu_time0=$(2> /dev/null < /proc/$pid/stat awk '{printf "%.0f", ($16+$17)*10 }' || echo -n 'X')
+    local io_stat0=($(2> /dev/null < /proc/$pid/io sed 's/^.*:\s*//' | head -n 6 | tr '\n' ' ' || echo -n '0 0 0 0 0 0'))
+    local start_millis=$(nxf_date)
+    trap 'kill $mem_proc' ERR
+    
+    /bin/bash -ue /home/peerah/localpoppunk/work/a7/044dccbb426476a668503cc0955367/.command.sh &
+    local task=$!
+
+    mem_fd=$(nxf_fd)
+    eval "exec $mem_fd> >(nxf_mem_watch $task)"
+    local mem_proc=$!
+
+    wait $task
+
+    local end_millis=$(nxf_date)
+    local tot_time1=$(grep '^cpu ' /proc/stat | awk '{sum=$2+$3+$4+$5+$6+$7+$8+$9; printf "%.0f",sum}')
+    local cpu_time1=$(2> /dev/null < /proc/$pid/stat awk '{printf "%.0f", ($16+$17)*10 }' || echo -n 'X')
+    local ucpu=$(awk -v p1=$cpu_time1 -v p0=$cpu_time0 -v t1=$tot_time1 -v t0=$tot_time0 -v n=$num_cpus 'BEGIN { pct=(p1-p0)/(t1-t0)*100*n; printf("%.0f", pct>0 ? pct : 0) }' )
+
+    local io_stat1=($(2> /dev/null < /proc/$pid/io sed 's/^.*:\s*//' | head -n 6 | tr '\n' ' ' || echo -n '0 0 0 0 0 0'))
+    local i
+    for i in {0..5}; do
+        io_stat1[i]=$((io_stat1[i]-io_stat0[i]))
+    done
+
+    local wall_time=$((end_millis-start_millis))
+    [ $NXF_DEBUG = 1 ] && echo "+++ STATS %CPU=$ucpu TIME=$wall_time I/O=${io_stat1[*]}"
+
+    printf "%s\n" \
+        "nextflow.trace/v2" \
+        "realtime=$wall_time" \
+        "%cpu=$ucpu" \
+        "cpu_model=$cpu_model" \
+        "rchar=${io_stat1[0]}" \
+        "wchar=${io_stat1[1]}" \
+        "syscr=${io_stat1[2]}" \
+        "syscw=${io_stat1[3]}" \
+        "read_bytes=${io_stat1[4]}" \
+        "write_bytes=${io_stat1[5]}" >| "$trace_file" || >&2 echo "Error: Failed to write to file: $trace_file"
+
+    [ -e /proc/$mem_proc ] && eval "echo 'DONE' >&$mem_fd" || true
+    wait $mem_proc 2>/dev/null || true
+    while [ -e /proc/$mem_proc ]; do nxf_sleep 0.1; done
+}
+
+nxf_trace() {
+    local trace_file=.command.trace
+    touch $trace_file
+    if [[ $(uname) = Darwin ]]; then
+        nxf_trace_mac
+    else
+        nxf_trace_linux
+    fi
+}
+
+nxf_sleep() {
+  sleep $1 2>/dev/null || sleep 1;
+}
+
+nxf_date() {
+    local ts=$(date +%s%3N);
+    if [[ ${#ts} == 10 ]]; then echo ${ts}000
+    elif [[ $ts == *%3N ]]; then echo ${ts/\%3N/000}
+    elif [[ $ts == *3N ]]; then echo ${ts/3N/000}
+    elif [[ ${#ts} == 13 ]]; then echo $ts
+    else echo "Unexpected timestamp value: $ts"; exit 1
+    fi
+}
+
+nxf_env() {
+    echo '============= task environment ============='
+    env | sort | sed "s/\(.*\)AWS\(.*\)=\(.\{6\}\).*/\1AWS\2=\3xxxxxxxxxxxxx/"
+    echo '============= task output =================='
+}
+
+nxf_kill() {
+    declare -a children
+    while read P PP;do
+        children[$PP]+=" $P"
+    done < <(ps -e -o pid= -o ppid=)
+
+    kill_all() {
+        [[ $1 != $$ ]] && kill $1 2>/dev/null || true
+        for i in ${children[$1]:=}; do kill_all $i; done
+    }
+
+    kill_all $1
+}
+
+nxf_mktemp() {
+    local base=${1:-/tmp}
+    mkdir -p "$base"
+    if [[ $(uname) = Darwin ]]; then mktemp -d $base/nxf.XXXXXXXXXX
+    else TMPDIR="$base" mktemp -d -t nxf.XXXXXXXXXX
+    fi
+}
+
+nxf_fs_copy() {
+  local source=$1
+  local target=$2
+  local basedir=$(dirname $1)
+  mkdir -p $target/$basedir
+  cp -fRL $source $target/$basedir
+}
+
+nxf_fs_move() {
+  local source=$1
+  local target=$2
+  local basedir=$(dirname $1)
+  mkdir -p $target/$basedir
+  mv -f $source $target/$basedir
+}
+
+nxf_fs_rsync() {
+  rsync -rRl $1 $2
+}
+
+nxf_fs_rclone() {
+  rclone copyto $1 $2/$1
+}
+
+nxf_fs_fcp() {
+  fcp $1 $2/$1
+}
+
+on_exit() {
+    local last_err=$?
+    local exit_status=${nxf_main_ret:=0}
+    [[ ${exit_status} -eq 0 && ${nxf_unstage_ret:=0} -ne 0 ]] && exit_status=${nxf_unstage_ret:=0}
+    [[ ${exit_status} -eq 0 && ${last_err} -ne 0 ]] && exit_status=${last_err}
+    printf -- $exit_status > /home/peerah/localpoppunk/work/a7/044dccbb426476a668503cc0955367/.exitcode
+    set +u
+    docker rm $NXF_BOXID &>/dev/null || true
+    exit $exit_status
+}
+
+on_term() {
+    set +e
+    docker stop $NXF_BOXID
+}
+
+nxf_launch() {
+    docker run -i --cpu-shares 16384 --memory 204800m -e "NXF_TASK_WORKDIR" -e "NXF_DEBUG=${NXF_DEBUG:=0}" -v /home/peerah:/home/peerah -w "$NXF_TASK_WORKDIR" --name $NXF_BOXID staphb/poppunk:2.7.5 /bin/bash /home/peerah/localpoppunk/work/a7/044dccbb426476a668503cc0955367/.command.run nxf_trace
+}
+
+nxf_stage() {
+    true
+    # stage input files
+    ln -s /home/peerah/contextual/GCA_963562795.1.fasta GCA_963562795.1.fasta
+    ln -s /home/peerah/contextual/IE-0014_S8_L001-SPAdes.fasta IE-0014_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008829.fasta ERS008829.fasta
+    ln -s /home/peerah/contextual/IP-0059-6_S4_L001-SPAdes.fasta IP-0059-6_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_44W_S64_GCF_014713025.1_Laos.fasta Burkholderia_pseudomallei_44W_S64_GCF_014713025.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0009-1_S9_L001-SPAdes.fasta IP-0009-1_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0023-2_S3_L001-SPAdes.fasta IP-0023-2_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0157-8_S7_L001-SPAdes.fasta IP-0157-8_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008816.fasta ERS008816.fasta
+    ln -s /home/peerah/contextual/IP-0140-4_S10_L001-SPAdes.fasta IP-0140-4_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963565125.1.fasta GCA_963565125.1.fasta
+    ln -s /home/peerah/contextual/IP-0010-9_S10_L001-SPAdes.fasta IP-0010-9_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0135-4_S5_L001-SPAdes.fasta IP-0135-4_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963563525.1.fasta GCA_963563525.1.fasta
+    ln -s /home/peerah/contextual/IP-0139-6_S9_L001-SPAdes.fasta IP-0139-6_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0027-3_S7_L001-SPAdes.fasta IP-0027-3_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963561565.1.fasta GCA_963561565.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_49W_S68_GCF_014712965.1_Laos.fasta Burkholderia_pseudomallei_49W_S68_GCF_014712965.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0114-9_S5_L001-SPAdes.fasta IP-0114-9_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0018_S12_L001-SPAdes.fasta IE-0018_S12_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012340.fasta ERS012340.fasta
+    ln -s /home/peerah/contextual/ERS013364.fasta ERS013364.fasta
+    ln -s /home/peerah/contextual/ERS012380.fasta ERS012380.fasta
+    ln -s /home/peerah/contextual/IP-0045-5_S5_L001-SPAdes.fasta IP-0045-5_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012358.fasta ERS012358.fasta
+    ln -s /home/peerah/contextual/IE-0005_S10_L001-SPAdes.fasta IE-0005_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0084-4_S7_L001-SPAdes.fasta IP-0084-4_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963566765.1.fasta GCA_963566765.1.fasta
+    ln -s /home/peerah/contextual/GCA_963560945.1.fasta GCA_963560945.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_576_GCF_000182195.1_Thailand.fasta Burkholderia_pseudomallei_576_GCF_000182195.1_Thailand.fasta
+    ln -s /home/peerah/contextual/IP-0019-0_S10_L001-SPAdes.fasta IP-0019-0_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0099-2_S11_L001-SPAdes.fasta IP-0099-2_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_ABCPW_1_GCF_000774965.1_Australia.fasta Burkholderia_pseudomallei_ABCPW_1_GCF_000774965.1_Australia.fasta
+    ln -s /home/peerah/contextual/ERS013343.fasta ERS013343.fasta
+    ln -s /home/peerah/contextual/ERS008786.fasta ERS008786.fasta
+    ln -s /home/peerah/contextual/ERS008803.fasta ERS008803.fasta
+    ln -s /home/peerah/contextual/GCA_963566635.1.fasta GCA_963566635.1.fasta
+    ln -s /home/peerah/contextual/GCA_963560585.1.fasta GCA_963560585.1.fasta
+    ln -s /home/peerah/contextual/ERS013348.fasta ERS013348.fasta
+    ln -s /home/peerah/contextual/IP-0041-4_S1_L001-SPAdes.fasta IP-0041-4_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0153-7_S3_L001-SPAdes.fasta IP-0153-7_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0006-7_S6_L001-SPAdes.fasta IP-0006-7_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0146-1_S6_L001-SPAdes.fasta IP-0146-1_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963571365.1.fasta GCA_963571365.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_406e_GCF_000410895.1_Thailand.fasta Burkholderia_pseudomallei_406e_GCF_000410895.1_Thailand.fasta
+    ln -s /home/peerah/contextual/IP-0156-0_S6_L001-SPAdes.fasta IP-0156-0_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0107-3_S7_L001-SPAdes.fasta IP-0107-3_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0121-4_S1_L001-SPAdes.fasta IP-0121-4_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0055-4_S5_L001-SPAdes.fasta IP-0055-4_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963572615.1.fasta GCA_963572615.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_2011756296_GCF_002110985.1_USA_Puerto_Rico.fasta Burkholderia_pseudomallei_2011756296_GCF_002110985.1_USA_Puerto_Rico.fasta
+    ln -s /home/peerah/contextual/GCA_963566475.1.fasta GCA_963566475.1.fasta
+    ln -s /home/peerah/contextual/ERS008835.fasta ERS008835.fasta
+    ln -s /home/peerah/contextual/IP-0172-7_S7-SPAdes.fasta IP-0172-7_S7-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963561355.1.fasta GCA_963561355.1.fasta
+    ln -s /home/peerah/contextual/IP-0189-1_S4-SPAdes.fasta IP-0189-1_S4-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012347.fasta ERS012347.fasta
+    ln -s /home/peerah/contextual/IP-0167-7_S2-SPAdes.fasta IP-0167-7_S2-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0188-3_S3-SPAdes.fasta IP-0188-3_S3-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0103-2_S3_L001-SPAdes.fasta IP-0103-2_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0087-7_S10_L001-SPAdes.fasta IP-0087-7_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_52W_S71_GCF_014712835.1_Laos.fasta Burkholderia_pseudomallei_52W_S71_GCF_014712835.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0168-5_S3-SPAdes.fasta IP-0168-5_S3-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963571975.1.fasta GCA_963571975.1.fasta
+    ln -s /home/peerah/contextual/ERS013358.fasta ERS013358.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_64W_S75_GCF_014712815.1_Laos.fasta Burkholderia_pseudomallei_64W_S75_GCF_014712815.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0162-8_S1-SPAdes.fasta IP-0162-8_S1-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012332.fasta ERS012332.fasta
+    ln -s /home/peerah/contextual/ERS008781.fasta ERS008781.fasta
+    ln -s /home/peerah/contextual/IP-0125-5_S5_L001-SPAdes.fasta IP-0125-5_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0037-2_S7_L001-SPAdes.fasta IP-0037-2_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0117-2_S8_L001-SPAdes.fasta IP-0117-2_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963564305.1.fasta GCA_963564305.1.fasta
+    ln -s /home/peerah/contextual/IP-0128-9_S8_L001-SPAdes.fasta IP-0128-9_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0038-0_S8_L001-SPAdes.fasta IP-0038-0_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0129-7_S9_L001-SPAdes.fasta IP-0129-7_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008784.fasta ERS008784.fasta
+    ln -s /home/peerah/contextual/IP-0096-8_S8_L001-SPAdes.fasta IP-0096-8_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963572995.1.fasta GCA_963572995.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_1701_GCF_003268105.1_Viet_Nam.fasta Burkholderia_pseudomallei_1701_GCF_003268105.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/ERS008837.fasta ERS008837.fasta
+    ln -s /home/peerah/contextual/GCA_963569705.1.fasta GCA_963569705.1.fasta
+    ln -s /home/peerah/contextual/IP-0181-8_S6-SPAdes.fasta IP-0181-8_S6-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0063-8_S8_L001-SPAdes.fasta IP-0063-8_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0106-5_S6_L001-SPAdes.fasta IP-0106-5_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0131-3_S1_L001-SPAdes.fasta IP-0131-3_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0080-2_S3_L001-SPAdes.fasta IP-0080-2_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_284_GCF_025847905.1_Viet_Nam.fasta Burkholderia_pseudomallei_284_GCF_025847905.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/GCA_963561925.1.fasta GCA_963561925.1.fasta
+    ln -s /home/peerah/contextual/GCA_963570575.1.fasta GCA_963570575.1.fasta
+    ln -s /home/peerah/contextual/IE-0010_S4_L001-SPAdes.fasta IE-0010_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0021_S7-SPAdes.fasta IE-0021_S7-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0176-8_S1-SPAdes.fasta IP-0176-8_S1-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0088-5_S11_L001-SPAdes.fasta IP-0088-5_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0102-4_S2_L001-SPAdes.fasta IP-0102-4_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0142-0_S2_L001-SPAdes.fasta IP-0142-0_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0147-9_S7_L001-SPAdes.fasta IP-0147-9_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963561765.1.fasta GCA_963561765.1.fasta
+    ln -s /home/peerah/contextual/ERS008813.fasta ERS008813.fasta
+    ln -s /home/peerah/contextual/IP-0197-4_S2-SPAdes.fasta IP-0197-4_S2-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_900595585.2.fasta GCA_900595585.2.fasta
+    ln -s /home/peerah/contextual/IP-0149-5_S9_L001-SPAdes.fasta IP-0149-5_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0013_S7_L001-SPAdes.fasta IE-0013_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012324.fasta ERS012324.fasta
+    ln -s /home/peerah/contextual/IP-0050-5_S10_L001-SPAdes.fasta IP-0050-5_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008841.fasta ERS008841.fasta
+    ln -s /home/peerah/contextual/IP-0094-3_S6_L001-SPAdes.fasta IP-0094-3_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0091-9_S3_L001-SPAdes.fasta IP-0091-9_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012377.fasta ERS012377.fasta
+    ln -s /home/peerah/contextual/GCA_963566695.1.fasta GCA_963566695.1.fasta
+    ln -s /home/peerah/contextual/GCA_963568885.1.fasta GCA_963568885.1.fasta
+    ln -s /home/peerah/contextual/IP-0092-7_S4_L001-SPAdes.fasta IP-0092-7_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_619s005_GCF_001207785.2_Malaysia.fasta Burkholderia_pseudomallei_619s005_GCF_001207785.2_Malaysia.fasta
+    ln -s /home/peerah/contextual/GCA_963573095.1.fasta GCA_963573095.1.fasta
+    ln -s /home/peerah/contextual/GCA_963561075.1.fasta GCA_963561075.1.fasta
+    ln -s /home/peerah/contextual/GCA_963571845.1.fasta GCA_963571845.1.fasta
+    ln -s /home/peerah/contextual/GCA_963561895.1.fasta GCA_963561895.1.fasta
+    ln -s /home/peerah/contextual/IP-0120-6_S11_L001-SPAdes.fasta IP-0120-6_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0065-3_S10_L001-SPAdes.fasta IP-0065-3_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0001-8_S1_L001-SPAdes.fasta IP-0001-8_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008790.fasta ERS008790.fasta
+    ln -s /home/peerah/contextual/GCA_963566625.1.fasta GCA_963566625.1.fasta
+    ln -s /home/peerah/contextual/ERS012376.fasta ERS012376.fasta
+    ln -s /home/peerah/contextual/IP-0132-1_S2_L001-SPAdes.fasta IP-0132-1_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0076-0_S10_L001-SPAdes.fasta IP-0076-0_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0141-2_S1_L001-SPAdes.fasta IP-0141-2_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0053-9_S3_L001-SPAdes.fasta IP-0053-9_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0183-4_S8-SPAdes.fasta IP-0183-4_S8-SPAdes.fasta
+    ln -s /home/peerah/localpoppunk/work/ae/860d29e429233a9cd62c488f04cb79/poppunk_db poppunk_db
+    ln -s /home/peerah/contextual/ERS013346.fasta ERS013346.fasta
+    ln -s /home/peerah/contextual/IE-0006_S11_L001-SPAdes.fasta IE-0006_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0003_S8_L001-SPAdes.fasta IE-0003_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0044-8_S4_L001-SPAdes.fasta IP-0044-8_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963560675.1.fasta GCA_963560675.1.fasta
+    ln -s /home/peerah/contextual/GCA_900596305.2.fasta GCA_900596305.2.fasta
+    ln -s /home/peerah/contextual/IP-0031-5_S1_L001-SPAdes.fasta IP-0031-5_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012369.fasta ERS012369.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_50W_S69_GCF_014712935.1_Laos.fasta Burkholderia_pseudomallei_50W_S69_GCF_014712935.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0022-4_S2_L001-SPAdes.fasta IP-0022-4_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0118-0_S9_L001-SPAdes.fasta IP-0118-0_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_900597175.2.fasta GCA_900597175.2.fasta
+    ln -s /home/peerah/contextual/SRR12527885_contigs.fasta SRR12527885_contigs.fasta
+    ln -s /home/peerah/contextual/ERS012303.fasta ERS012303.fasta
+    ln -s /home/peerah/contextual/ERS012363.fasta ERS012363.fasta
+    ln -s /home/peerah/contextual/ERS013360.fasta ERS013360.fasta
+    ln -s /home/peerah/contextual/IP-0115-6_S6_L001-SPAdes.fasta IP-0115-6_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_134K_GCF_009830075.1_Thailand.fasta Burkholderia_pseudomallei_134K_GCF_009830075.1_Thailand.fasta
+    ln -s /home/peerah/contextual/GCA_963565085.1.fasta GCA_963565085.1.fasta
+    ln -s /home/peerah/contextual/IP-0024-0_S4_L001-SPAdes.fasta IP-0024-0_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS013353.fasta ERS013353.fasta
+    ln -s /home/peerah/contextual/IP-0179-2_S4-SPAdes.fasta IP-0179-2_S4-SPAdes.fasta
+    ln -s /home/peerah/contextual/SRR12527871_contigs.fasta SRR12527871_contigs.fasta
+    ln -s /home/peerah/contextual/IP-0033-1_S3_L001-SPAdes.fasta IP-0033-1_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963570085.1.fasta GCA_963570085.1.fasta
+    ln -s /home/peerah/contextual/IP-0086-9_S9_L001-SPAdes.fasta IP-0086-9_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0161-0_S11_L001-SPAdes.fasta IP-0161-0_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0043-0_S3_L001-SPAdes.fasta IP-0043-0_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012362.fasta ERS012362.fasta
+    ln -s /home/peerah/contextual/GCA_963561915.1.fasta GCA_963561915.1.fasta
+    ln -s /home/peerah/contextual/IP-0090-1_S2_L001-SPAdes.fasta IP-0090-1_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0042-2_S2_L001-SPAdes.fasta IP-0042-2_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008838.fasta ERS008838.fasta
+    ln -s /home/peerah/contextual/GCA_963567935.1.fasta GCA_963567935.1.fasta
+    ln -s /home/peerah/contextual/ERS012316.fasta ERS012316.fasta
+    ln -s /home/peerah/contextual/IP-0052-1_S2_L001-SPAdes.fasta IP-0052-1_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0051-3_S1_L001-SPAdes.fasta IP-0051-3_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0040-6_S10_L001-SPAdes.fasta IP-0040-6_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0177-6_S2-SPAdes.fasta IP-0177-6_S2-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012356.fasta ERS012356.fasta
+    ln -s /home/peerah/contextual/ERS013354.fasta ERS013354.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_316c_GCF_001980755.1_Thailand.fasta Burkholderia_pseudomallei_316c_GCF_001980755.1_Thailand.fasta
+    ln -s /home/peerah/contextual/ERS008797.fasta ERS008797.fasta
+    ln -s /home/peerah/contextual/ERS013342.fasta ERS013342.fasta
+    ln -s /home/peerah/contextual/GCA_963562965.1.fasta GCA_963562965.1.fasta
+    ln -s /home/peerah/contextual/IP-0185-9_S10-SPAdes.fasta IP-0185-9_S10-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0024_S10-SPAdes.fasta IE-0024_S10-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0001_S6_L001-SPAdes.fasta IE-0001_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0003-4_S3_L001-SPAdes.fasta IP-0003-4_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963573135.1.fasta GCA_963573135.1.fasta
+    ln -s /home/peerah/contextual/ERS013345.fasta ERS013345.fasta
+    ln -s /home/peerah/contextual/IP-0193-3_S8-SPAdes.fasta IP-0193-3_S8-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0012-5_S3_L001-SPAdes.fasta IP-0012-5_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_ABCPW_107_GCF_000773235.1_Australia.fasta Burkholderia_pseudomallei_ABCPW_107_GCF_000773235.1_Australia.fasta
+    ln -s /home/peerah/contextual/ERS012307.fasta ERS012307.fasta
+    ln -s /home/peerah/contextual/ERS012314.fasta ERS012314.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_47W_S67_GCF_014712955.1_Laos.fasta Burkholderia_pseudomallei_47W_S67_GCF_014712955.1_Laos.fasta
+    ln -s /home/peerah/contextual/GCA_963561975.1.fasta GCA_963561975.1.fasta
+    ln -s /home/peerah/contextual/GCA_963572755.1.fasta GCA_963572755.1.fasta
+    ln -s /home/peerah/contextual/IE-0012_S6_L001-SPAdes.fasta IE-0012_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_2010007509_GCF_002111145.1_USA_Arizona_ex_Costa_Rica.fasta Burkholderia_pseudomallei_2010007509_GCF_002111145.1_USA_Arizona_ex_Costa_Rica.fasta
+    ln -s /home/peerah/contextual/IP-0020-8_S11_L001-SPAdes.fasta IP-0020-8_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0034-9_S4_L001-SPAdes.fasta IP-0034-9_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0013-3_S4_L001-SPAdes.fasta IP-0013-3_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963563475.1.fasta GCA_963563475.1.fasta
+    ln -s /home/peerah/contextual/IP-0021-6_S1_L001-SPAdes.fasta IP-0021-6_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963570975.1.fasta GCA_963570975.1.fasta
+    ln -s /home/peerah/contextual/ERS008792.fasta ERS008792.fasta
+    ln -s /home/peerah/contextual/ERS013352.fasta ERS013352.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_619s004_GCF_001212405.2_Malaysia.fasta Burkholderia_pseudomallei_619s004_GCF_001212405.2_Malaysia.fasta
+    ln -s /home/peerah/contextual/IE-0011_S5_L001-SPAdes.fasta IE-0011_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_43W_S62_GCF_014713065.1_Laos.fasta Burkholderia_pseudomallei_43W_S62_GCF_014713065.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0187-5_S2-SPAdes.fasta IP-0187-5_S2-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0002-6_S2_L001-SPAdes.fasta IP-0002-6_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0026_S8-SPAdes.fasta IE-0026_S8-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0004-2_S4_L001-SPAdes.fasta IP-0004-2_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963562325.1.fasta GCA_963562325.1.fasta
+    ln -s /home/peerah/contextual/IP-0119-8_S10_L001-SPAdes.fasta IP-0119-8_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963561435.1.fasta GCA_963561435.1.fasta
+    ln -s /home/peerah/contextual/IP-0195-8_S10-SPAdes.fasta IP-0195-8_S10-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_4822_GCF_009826725.1_Viet_Nam.fasta Burkholderia_pseudomallei_4822_GCF_009826725.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/GCA_963570025.1.fasta GCA_963570025.1.fasta
+    ln -s /home/peerah/contextual/ERS008795.fasta ERS008795.fasta
+    ln -s /home/peerah/contextual/IP-0150-3_S10_L001-SPAdes.fasta IP-0150-3_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963566455.1.fasta GCA_963566455.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_53W_S72_GCF_014712895.1_Laos.fasta Burkholderia_pseudomallei_53W_S72_GCF_014712895.1_Laos.fasta
+    ln -s /home/peerah/contextual/ERS012312.fasta ERS012312.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_7400_GCF_025848135.1_Viet_Nam.fasta Burkholderia_pseudomallei_7400_GCF_025848135.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/GCA_963565565.1.fasta GCA_963565565.1.fasta
+    ln -s /home/peerah/contextual/IP-0054-7_S4_L001-SPAdes.fasta IP-0054-7_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012309.fasta ERS012309.fasta
+    ln -s /home/peerah/contextual/GCA_963569795.1.fasta GCA_963569795.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_354e_GCF_000259795.1_Thailand.fasta Burkholderia_pseudomallei_354e_GCF_000259795.1_Thailand.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_4811_GCF_003268075.1_Viet_Nam.fasta Burkholderia_pseudomallei_4811_GCF_003268075.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/ERS012359.fasta ERS012359.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_7801_GCF_025848015.1_Viet_Nam.fasta Burkholderia_pseudomallei_7801_GCF_025848015.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/ERS012365.fasta ERS012365.fasta
+    ln -s /home/peerah/contextual/ERS012370.fasta ERS012370.fasta
+    ln -s /home/peerah/contextual/ERS008794.fasta ERS008794.fasta
+    ln -s /home/peerah/contextual/GCA_963566175.1.fasta GCA_963566175.1.fasta
+    ln -s /home/peerah/contextual/ERS012313.fasta ERS012313.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_43S_S63_GCF_014713085.1_Laos.fasta Burkholderia_pseudomallei_43S_S63_GCF_014713085.1_Laos.fasta
+    ln -s /home/peerah/contextual/ERS012308.fasta ERS012308.fasta
+    ln -s /home/peerah/contextual/IP-0105-7_S5_L001-SPAdes.fasta IP-0105-7_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0018-2_S9_L001-SPAdes.fasta IP-0018-2_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963571055.1.fasta GCA_963571055.1.fasta
+    ln -s /home/peerah/contextual/ERS008809.fasta ERS008809.fasta
+    ln -s /home/peerah/contextual/IP-0109-9_S9_L001-SPAdes.fasta IP-0109-9_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_619s008_GCF_001326955.2_Malaysia.fasta Burkholderia_pseudomallei_619s008_GCF_001326955.2_Malaysia.fasta
+    ln -s /home/peerah/contextual/IP-0101-6_S1_L001-SPAdes.fasta IP-0101-6_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008836.fasta ERS008836.fasta
+    ln -s /home/peerah/contextual/IE-0019_S5-SPAdes.fasta IE-0019_S5-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963564325.1.fasta GCA_963564325.1.fasta
+    ln -s /home/peerah/contextual/IP-0032-3_S2_L001-SPAdes.fasta IP-0032-3_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0148-7_S8_L001-SPAdes.fasta IP-0148-7_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0072-9_S6_L001-SPAdes.fasta IP-0072-9_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_4802_GCF_003268115.1_Viet_Nam.fasta Burkholderia_pseudomallei_4802_GCF_003268115.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/GCA_963571745.1.fasta GCA_963571745.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_ABCPW_91_GCF_000774405.1_Australia.fasta Burkholderia_pseudomallei_ABCPW_91_GCF_000774405.1_Australia.fasta
+    ln -s /home/peerah/contextual/IP-0126-3_S6_L001-SPAdes.fasta IP-0126-3_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_577ci_GCF_001980815.1_Thailand.fasta Burkholderia_pseudomallei_577ci_GCF_001980815.1_Thailand.fasta
+    ln -s /home/peerah/contextual/ERS012306.fasta ERS012306.fasta
+    ln -s /home/peerah/contextual/IP-0036-4_S6_L001-SPAdes.fasta IP-0036-4_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0068-7_S2_L001-SPAdes.fasta IP-0068-7_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0014-1_S5_L001-SPAdes.fasta IP-0014-1_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_619s007_GCF_001326935.2_Malaysia.fasta Burkholderia_pseudomallei_619s007_GCF_001326935.2_Malaysia.fasta
+    ln -s /home/peerah/contextual/ERS012320.fasta ERS012320.fasta
+    ln -s /home/peerah/contextual/IP-0182-6_S7-SPAdes.fasta IP-0182-6_S7-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0199-0_S4-SPAdes.fasta IP-0199-0_S4-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963562695.1.fasta GCA_963562695.1.fasta
+    ln -s /home/peerah/contextual/GCA_963563065.1.fasta GCA_963563065.1.fasta
+    ln -s /home/peerah/contextual/IP-0097-6_S9_L001-SPAdes.fasta IP-0097-6_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963570105.1.fasta GCA_963570105.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_40S_S61_GCF_014713055.1_Laos.fasta Burkholderia_pseudomallei_40S_S61_GCF_014713055.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0169-3_S4-SPAdes.fasta IP-0169-3_S4-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012338.fasta ERS012338.fasta
+    ln -s /home/peerah/contextual/IP-0061-2_S6_L001-SPAdes.fasta IP-0061-2_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008804.fasta ERS008804.fasta
+    ln -s /home/peerah/contextual/IP-0075-2_S9_L001-SPAdes.fasta IP-0075-2_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963560915.1.fasta GCA_963560915.1.fasta
+    ln -s /home/peerah/contextual/ERS008785.fasta ERS008785.fasta
+    ln -s /home/peerah/contextual/IP-0011-7_S2_L001-SPAdes.fasta IP-0011-7_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008798.fasta ERS008798.fasta
+    ln -s /home/peerah/contextual/GCA_963568055.1.fasta GCA_963568055.1.fasta
+    ln -s /home/peerah/contextual/IP-0025-7_S5_L001-SPAdes.fasta IP-0025-7_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0137-0_S7_L001-SPAdes.fasta IP-0137-0_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_619s006_GCF_001212705.2_Malaysia.fasta Burkholderia_pseudomallei_619s006_GCF_001212705.2_Malaysia.fasta
+    ln -s /home/peerah/contextual/IP-0191-7_S6-SPAdes.fasta IP-0191-7_S6-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0007-5_S7_L001-SPAdes.fasta IP-0007-5_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_51W_S70_GCF_014712915.1_Laos.fasta Burkholderia_pseudomallei_51W_S70_GCF_014712915.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0155-2_S5_L001-SPAdes.fasta IP-0155-2_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0144-6_S4_L001-SPAdes.fasta IP-0144-6_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008844.fasta ERS008844.fasta
+    ln -s /home/peerah/contextual/IP-0166-9_S1-SPAdes.fasta IP-0166-9_S1-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_45S_S65_GCF_014713015.1_Laos.fasta Burkholderia_pseudomallei_45S_S65_GCF_014713015.1_Laos.fasta
+    ln -s /home/peerah/contextual/GCA_963565675.1.fasta GCA_963565675.1.fasta
+    ln -s /home/peerah/contextual/ERS013355.fasta ERS013355.fasta
+    ln -s /home/peerah/contextual/ERS013365.fasta ERS013365.fasta
+    ln -s /home/peerah/contextual/IP-0116-4_S7_L001-SPAdes.fasta IP-0116-4_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963569325.1.fasta GCA_963569325.1.fasta
+    ln -s /home/peerah/contextual/ERS012327.fasta ERS012327.fasta
+    ln -s /home/peerah/contextual/GCA_963567115.1.fasta GCA_963567115.1.fasta
+    ln -s /home/peerah/contextual/GCA_963568005.1.fasta GCA_963568005.1.fasta
+    ln -s /home/peerah/contextual/ERS012317.fasta ERS012317.fasta
+    ln -s /home/peerah/contextual/GCA_963564785.1.fasta GCA_963564785.1.fasta
+    ln -s /home/peerah/contextual/IP-0201-4_S6-SPAdes.fasta IP-0201-4_S6-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_60W_S74_GCF_014712825.1_Laos.fasta Burkholderia_pseudomallei_60W_S74_GCF_014712825.1_Laos.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_134_GCF_009830095.1_Thailand.fasta Burkholderia_pseudomallei_134_GCF_009830095.1_Thailand.fasta
+    ln -s /home/peerah/contextual/GCA_963565485.1.fasta GCA_963565485.1.fasta
+    ln -s /home/peerah/contextual/IP-0138-8_S8_L001-SPAdes.fasta IP-0138-8_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0028-1_S8_L001-SPAdes.fasta IP-0028-1_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008828.fasta ERS008828.fasta
+    ln -s /home/peerah/contextual/GCA_963565015.1.fasta GCA_963565015.1.fasta
+    ln -s /home/peerah/contextual/IP-0046-3_S6_L001-SPAdes.fasta IP-0046-3_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0047-1_S7_L001-SPAdes.fasta IP-0047-1_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0108-1_S8_L001-SPAdes.fasta IP-0108-1_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0163-6_S2-SPAdes.fasta IP-0163-6_S2-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0165-1_S4-SPAdes.fasta IP-0165-1_S4-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0130-5_S10_L001-SPAdes.fasta IP-0130-5_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963564375.1.fasta GCA_963564375.1.fasta
+    ln -s /home/peerah/localpoppunk/work/19/5cf5b0e1097ad928e71d28f4adc34b/valid_files.list valid_files.list
+    ln -s /home/peerah/contextual/IP-0200-6_S5-SPAdes.fasta IP-0200-6_S5-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012331.fasta ERS012331.fasta
+    ln -s /home/peerah/contextual/GCA_963569645.1.fasta GCA_963569645.1.fasta
+    ln -s /home/peerah/contextual/GCA_963569365.1.fasta GCA_963569365.1.fasta
+    ln -s /home/peerah/contextual/GCA_963562655.1.fasta GCA_963562655.1.fasta
+    ln -s /home/peerah/contextual/IP-0158-6_S8_L001-SPAdes.fasta IP-0158-6_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0058-8_S3_L001-SPAdes.fasta IP-0058-8_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS013363.fasta ERS013363.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_2002734728_GCF_002111105.1_USA_California.fasta Burkholderia_pseudomallei_2002734728_GCF_002111105.1_USA_California.fasta
+    ln -s /home/peerah/contextual/GCA_963561735.1.fasta GCA_963561735.1.fasta
+    ln -s /home/peerah/contextual/IP-0151-1_S1_L001-SPAdes.fasta IP-0151-1_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012354.fasta ERS012354.fasta
+    ln -s /home/peerah/contextual/GCA_963573025.1.fasta GCA_963573025.1.fasta
+    ln -s /home/peerah/contextual/GCA_963565395.1.fasta GCA_963565395.1.fasta
+    ln -s /home/peerah/contextual/IE-0022_S8-SPAdes.fasta IE-0022_S8-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0104-0_S4_L001-SPAdes.fasta IP-0104-0_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0016_S10_L001-SPAdes.fasta IE-0016_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0098-4_S10_L001-SPAdes.fasta IP-0098-4_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0159-4_S9_L001-SPAdes.fasta IP-0159-4_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0093-5_S5_L001-SPAdes.fasta IP-0093-5_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0180-0_S5-SPAdes.fasta IP-0180-0_S5-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0089-3_S1_L001-SPAdes.fasta IP-0089-3_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0173-5_S8-SPAdes.fasta IP-0173-5_S8-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012330.fasta ERS012330.fasta
+    ln -s /home/peerah/contextual/GCA_963564975.1.fasta GCA_963564975.1.fasta
+    ln -s /home/peerah/contextual/GCA_963571905.1.fasta GCA_963571905.1.fasta
+    ln -s /home/peerah/contextual/IP-0077-8_S11_L001-SPAdes.fasta IP-0077-8_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0123-0_S3_L001-SPAdes.fasta IP-0123-0_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0122-2_S2_L001-SPAdes.fasta IP-0122-2_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0017_S11_L001-SPAdes.fasta IE-0017_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0081-0_S4_L001-SPAdes.fasta IP-0081-0_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_402a_GCF_001980775.1_Thailand.fasta Burkholderia_pseudomallei_402a_GCF_001980775.1_Thailand.fasta
+    ln -s /home/peerah/contextual/IP-0060-4_S5_L001-SPAdes.fasta IP-0060-4_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963563715.1.fasta GCA_963563715.1.fasta
+    ln -s /home/peerah/contextual/IP-0190-9_S5-SPAdes.fasta IP-0190-9_S5-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0048-9_S8_L001-SPAdes.fasta IP-0048-9_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_2002721684_GCF_002110925.1_USA_Texas.fasta Burkholderia_pseudomallei_2002721684_GCF_002110925.1_USA_Texas.fasta
+    ln -s /home/peerah/contextual/ERS008819.fasta ERS008819.fasta
+    ln -s /home/peerah/contextual/IP-0064-6_S9_L001-SPAdes.fasta IP-0064-6_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963569685.1.fasta GCA_963569685.1.fasta
+    ln -s /home/peerah/contextual/IP-0035-6_S5_L001-SPAdes.fasta IP-0035-6_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0127-1_S7_L001-SPAdes.fasta IP-0127-1_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0004_S9_L001-SPAdes.fasta IE-0004_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0039-8_S9_L001-SPAdes.fasta IP-0039-8_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0154-5_S4_L001-SPAdes.fasta IP-0154-5_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0009_S3_L001-SPAdes.fasta IE-0009_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0026-5_S6_L001-SPAdes.fasta IP-0026-5_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0136-2_S6_L001-SPAdes.fasta IP-0136-2_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963571475.1.fasta GCA_963571475.1.fasta
+    ln -s /home/peerah/contextual/IP-0111-5_S2_L001-SPAdes.fasta IP-0111-5_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963567325.1.fasta GCA_963567325.1.fasta
+    ln -s /home/peerah/contextual/IP-0066-1_S11_L001-SPAdes.fasta IP-0066-1_S11_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0085-1_S8_L001-SPAdes.fasta IP-0085-1_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0164-4_S3-SPAdes.fasta IP-0164-4_S3-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0186-7_S1-SPAdes.fasta IP-0186-7_S1-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963573175.1.fasta GCA_963573175.1.fasta
+    ln -s /home/peerah/contextual/IP-0073-7_S7_L001-SPAdes.fasta IP-0073-7_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0067-9_S1_L001-SPAdes.fasta IP-0067-9_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963566675.1.fasta GCA_963566675.1.fasta
+    ln -s /home/peerah/contextual/GCA_963566495.1.fasta GCA_963566495.1.fasta
+    ln -s /home/peerah/contextual/GCA_963566085.1.fasta GCA_963566085.1.fasta
+    ln -s /home/peerah/contextual/GCA_963566855.1.fasta GCA_963566855.1.fasta
+    ln -s /home/peerah/contextual/GCA_963571495.1.fasta GCA_963571495.1.fasta
+    ln -s /home/peerah/contextual/IP-0124-8_S4_L001-SPAdes.fasta IP-0124-8_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0082-8_S5_L001-SPAdes.fasta IP-0082-8_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_58W_S73_GCF_014712875.1_Laos.fasta Burkholderia_pseudomallei_58W_S73_GCF_014712875.1_Laos.fasta
+    ln -s /home/peerah/contextual/GCA_963568785.1.fasta GCA_963568785.1.fasta
+    ln -s /home/peerah/contextual/ERS008820.fasta ERS008820.fasta
+    ln -s /home/peerah/contextual/ERS012351.fasta ERS012351.fasta
+    ln -s /home/peerah/contextual/IP-0056-2_S1_L001-SPAdes.fasta IP-0056-2_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0171-9-R_S12-SPAdes.fasta IP-0171-9-R_S12-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963561835.1.fasta GCA_963561835.1.fasta
+    ln -s /home/peerah/contextual/IP-0079-4_S2_L001-SPAdes.fasta IP-0079-4_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963563635.1.fasta GCA_963563635.1.fasta
+    ln -s /home/peerah/contextual/ERS008833.fasta ERS008833.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_4702_GCF_009827035.1_Viet_Nam.fasta Burkholderia_pseudomallei_4702_GCF_009827035.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_8400_GCF_025847635.1_Viet_Nam.fasta Burkholderia_pseudomallei_8400_GCF_025847635.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/IP-0170-1_S5-SPAdes.fasta IP-0170-1_S5-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963561855.1.fasta GCA_963561855.1.fasta
+    ln -s /home/peerah/contextual/ERS008821.fasta ERS008821.fasta
+    ln -s /home/peerah/contextual/IP-0145-3_S5_L001-SPAdes.fasta IP-0145-3_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0174-3_S9-SPAdes.fasta IP-0174-3_S9-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_ABCPW_30_GCF_000774495.1_Australia.fasta Burkholderia_pseudomallei_ABCPW_30_GCF_000774495.1_Australia.fasta
+    ln -s /home/peerah/contextual/IP-0152-9_S2_L001-SPAdes.fasta IP-0152-9_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_354a_GCF_000259815.1_Thailand.fasta Burkholderia_pseudomallei_354a_GCF_000259815.1_Thailand.fasta
+    ln -s /home/peerah/contextual/IP-0008-3_S8_L001-SPAdes.fasta IP-0008-3_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0143-8_S3_L001-SPAdes.fasta IP-0143-8_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0005-9_S5_L001-SPAdes.fasta IP-0005-9_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963569785.1.fasta GCA_963569785.1.fasta
+    ln -s /home/peerah/contextual/IP-0133-9_S3_L001-SPAdes.fasta IP-0133-9_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0007_S1_L001-SPAdes.fasta IE-0007_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963562615.1.fasta GCA_963562615.1.fasta
+    ln -s /home/peerah/contextual/IP-0134-7_S4_L001-SPAdes.fasta IP-0134-7_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012328.fasta ERS012328.fasta
+    ln -s /home/peerah/contextual/ERS008822.fasta ERS008822.fasta
+    ln -s /home/peerah/contextual/IP-0062-0_S7_L001-SPAdes.fasta IP-0062-0_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_91W_S76_GCF_014712775.1_Laos.fasta Burkholderia_pseudomallei_91W_S76_GCF_014712775.1_Laos.fasta
+    ln -s /home/peerah/contextual/IP-0196-6_S1-SPAdes.fasta IP-0196-6_S1-SPAdes.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_46W_S66_GCF_014712945.1_Laos.fasta Burkholderia_pseudomallei_46W_S66_GCF_014712945.1_Laos.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_BDD_GCF_000756905.1_Australia_Townsville_Queensland.fasta Burkholderia_pseudomallei_BDD_GCF_000756905.1_Australia_Townsville_Queensland.fasta
+    ln -s /home/peerah/contextual/IP-0083-6_S6_L001-SPAdes.fasta IP-0083-6_S6_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0095-0_S7_L001-SPAdes.fasta IP-0095-0_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0202-2_S7-SPAdes.fasta IP-0202-2_S7-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0175-0_S10-SPAdes.fasta IP-0175-0_S10-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0078-6_S1_L001-SPAdes.fasta IP-0078-6_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963568705.1.fasta GCA_963568705.1.fasta
+    ln -s /home/peerah/contextual/GCA_963573225.1.fasta GCA_963573225.1.fasta
+    ln -s /home/peerah/contextual/IP-0030-7_S10_L001-SPAdes.fasta IP-0030-7_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0113-1_S4_L001-SPAdes.fasta IP-0113-1_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0112-3_S3_L001-SPAdes.fasta IP-0112-3_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS012334.fasta ERS012334.fasta
+    ln -s /home/peerah/contextual/GCA_963561215.1.fasta GCA_963561215.1.fasta
+    ln -s /home/peerah/contextual/IP-0070-3_S4_L001-SPAdes.fasta IP-0070-3_S4_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0071-1_S5_L001-SPAdes.fasta IP-0071-1_S5_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0160-2_S10_L001-SPAdes.fasta IP-0160-2_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0100-8_S1_L001-SPAdes.fasta IP-0100-8_S1_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0057-0_S2_L001-SPAdes.fasta IP-0057-0_S2_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0069-5_S3_L001-SPAdes.fasta IP-0069-5_S3_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008825.fasta ERS008825.fasta
+    ln -s /home/peerah/contextual/GCA_900598305.2.fasta GCA_900598305.2.fasta
+    ln -s /home/peerah/contextual/GCA_963562235.1.fasta GCA_963562235.1.fasta
+    ln -s /home/peerah/contextual/ERS008817.fasta ERS008817.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_28P_GCF_025847415.1_Viet_Nam.fasta Burkholderia_pseudomallei_28P_GCF_025847415.1_Viet_Nam.fasta
+    ln -s /home/peerah/contextual/GCA_963563305.1.fasta GCA_963563305.1.fasta
+    ln -s /home/peerah/contextual/IP-0184-2_S9-SPAdes.fasta IP-0184-2_S9-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0049-7_S9_L001-SPAdes.fasta IP-0049-7_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/ERS008830.fasta ERS008830.fasta
+    ln -s /home/peerah/contextual/IP-0192-5_S7-SPAdes.fasta IP-0192-5_S7-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963571005.1.fasta GCA_963571005.1.fasta
+    ln -s /home/peerah/contextual/GCA_963560735.1.fasta GCA_963560735.1.fasta
+    ln -s /home/peerah/contextual/Burkholderia_pseudomallei_316a_GCF_001980725.1_Thailand.fasta Burkholderia_pseudomallei_316a_GCF_001980725.1_Thailand.fasta
+    ln -s /home/peerah/contextual/IP-0029-9_S9_L001-SPAdes.fasta IP-0029-9_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963561245.1.fasta GCA_963561245.1.fasta
+    ln -s /home/peerah/contextual/IP-0110-7_S10_L001-SPAdes.fasta IP-0110-7_S10_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/GCA_963565345.1.fasta GCA_963565345.1.fasta
+    ln -s /home/peerah/contextual/ERS008824.fasta ERS008824.fasta
+    ln -s /home/peerah/contextual/GCA_963563155.1.fasta GCA_963563155.1.fasta
+    ln -s /home/peerah/contextual/IP-0016-6_S7_L001-SPAdes.fasta IP-0016-6_S7_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0017-4_S8_L001-SPAdes.fasta IP-0017-4_S8_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IE-0015_S9_L001-SPAdes.fasta IE-0015_S9_L001-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0178-4_S3-SPAdes.fasta IP-0178-4_S3-SPAdes.fasta
+    ln -s /home/peerah/contextual/IP-0015-8_S6_L001-SPAdes.fasta IP-0015-8_S6_L001-SPAdes.fasta
+}
+
+nxf_unstage_outputs() {
+    true
+}
+
+nxf_unstage_controls() {
+    true
+}
+
+nxf_unstage() {
+    if [[ ${nxf_main_ret:=0} == 0 ]]; then
+        (set -e -o pipefail; (nxf_unstage_outputs | tee -a .command.out) 3>&1 1>&2 2>&3 | tee -a .command.err)
+        nxf_unstage_ret=$?
+    fi
+    nxf_unstage_controls
+}
+
+nxf_main() {
+    trap on_exit EXIT
+    trap on_term TERM INT USR2
+    trap '' USR1
+
+    [[ "${NXF_CHDIR:-}" ]] && cd "$NXF_CHDIR"
+    export NXF_BOXID="nxf-$(dd bs=18 count=1 if=/dev/urandom 2>/dev/null | base64 | tr +/ 0A | tr -d '\r\n')"
+    NXF_SCRATCH=''
+    [[ $NXF_DEBUG > 0 ]] && nxf_env
+    touch /home/peerah/localpoppunk/work/a7/044dccbb426476a668503cc0955367/.command.begin
+    set +u
+    set -u
+    [[ $NXF_SCRATCH ]] && cd $NXF_SCRATCH
+    export NXF_TASK_WORKDIR="$PWD"
+    nxf_stage
+
+    set +e
+    (set -o pipefail; (nxf_launch | tee .command.out) 3>&1 1>&2 2>&3 | tee .command.err) &
+    pid=$!
+    wait $pid || nxf_main_ret=$?
+    nxf_unstage
+}
+
+$NXF_ENTRY

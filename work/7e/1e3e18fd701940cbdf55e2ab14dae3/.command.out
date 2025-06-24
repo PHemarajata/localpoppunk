@@ -1,0 +1,43 @@
+Assigning 450 genomes to PopPUNK clusters...
+Total valid files from input: 450
+First few files to be assigned:
+IP-0050-5_S10_L001-SPAdes	IP-0050-5_S10_L001-SPAdes.fasta
+IP-0100-8_S1_L001-SPAdes	IP-0100-8_S1_L001-SPAdes.fasta
+Burkholderia_pseudomallei_44W_S64_GCF_014713025.1_Laos	Burkholderia_pseudomallei_44W_S64_GCF_014713025.1_Laos.fasta
+IP-0201-4_S6-SPAdes	IP-0201-4_S6-SPAdes.fasta
+GCA_963565015.1	GCA_963565015.1.fasta
+Last few files to be assigned:
+Burkholderia_pseudomallei_316a_GCF_001980725.1_Thailand	Burkholderia_pseudomallei_316a_GCF_001980725.1_Thailand.fasta
+ERS012327	ERS012327.fasta
+IE-0019_S5-SPAdes	IE-0019_S5-SPAdes.fasta
+Burkholderia_pseudomallei_2010007509_GCF_002111145.1_USA_Arizona_ex_Costa_Rica	Burkholderia_pseudomallei_2010007509_GCF_002111145.1_USA_Arizona_ex_Costa_Rica.fasta
+IP-0149-5_S9_L001-SPAdes	IP-0149-5_S9_L001-SPAdes.fasta
+Verifying staged files exist...
+All files verified. Starting PopPUNK assignment...
+Using 16 threads (reduced from 16 to prevent segmentation fault)
+Attempting PopPUNK assignment with segfault prevention measures...
+poppunk_full/poppunk_full
+✅ PopPUNK assignment completed successfully without stable mode
+Found poppunk_full_clusters.csv in poppunk_full/
+PopPUNK assignment completed successfully!
+Final assignment file contains 503 lines (including header)
+Expected: 450 + 1 (header)
+Actual samples assigned: 502
+Cluster distribution analysis:
+==============================
+Total samples assigned: 502
+Number of unique clusters: 10
+
+Cluster sizes:
+    493 1
+      1 9
+      1 8
+      1 7
+      1 6
+      1 5
+      1 4
+      1 3
+      1 2
+      1 10
+
+✅ Good cluster diversity: 10 clusters found

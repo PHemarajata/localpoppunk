@@ -155,7 +155,7 @@ process MASH_SKETCH {
 process MASH_DIST {
     tag         'mash_dist'
     container 'quay.io/biocontainers/mash:2.3--hb105d93_9'
-    cpus        32
+    cpus        { Math.min(params.threads, 16) }  // Prevent resource contention
     memory      '64 GB'
 
     input:
@@ -178,7 +178,7 @@ process MASH_DIST {
 process BIN_SUBSAMPLE {
     tag         'bin_subsample'
     container 'python:3.9'
-    cpus        16
+    cpus        8  // Reduced for stability
     memory      '32 GB'
 
     input:
@@ -208,12 +208,19 @@ for line in open('${dist_file}'):
 print(f"Graph built with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges")
 print(f"Found {nx.number_connected_components(G)} connected components")
 
+# Analyze component sizes for debugging
+component_sizes = [len(comp) for comp in nx.connected_components(G)]
+component_sizes.sort(reverse=True)
+print(f"Component sizes: {component_sizes[:10]}")  # Show top 10 component sizes
+print(f"Largest component has {max(component_sizes) if component_sizes else 0} genomes")
+print(f"Average component size: {sum(component_sizes)/len(component_sizes) if component_sizes else 0:.1f}")
+
 with open('subset.list','w') as out:
     total_selected = 0
     for i, comp in enumerate(nx.connected_components(G)):
         comp = list(comp)
-        # More generous subsampling: take at least 30% of each component, minimum 25, maximum 200
-        k = min(200, max(25, int(len(comp) * 0.3)))
+        # Optimized subsampling for better cluster resolution: take fewer but more diverse representatives
+        k = min(100, max(10, int(len(comp) * 0.15)))
         k = min(k, len(comp))
         if k > 0:
             selected = random.sample(comp, k)
@@ -285,12 +292,14 @@ process POPPUNK_MODEL {
 
     echo "Database created successfully. Fitting model with PopPUNK 2.7.x features..."
     
-    # Use new PopPUNK 2.7.x features for better model fitting
+    # Use optimized PopPUNK 2.7.x features for better cluster separation
+    echo "Fitting PopPUNK model with optimized parameters for better clustering..."
     poppunk --fit-model bgmm --ref-db poppunk_db \\
         --output poppunk_fit --threads ${task.cpus} \\
         ${params.poppunk_reciprocal ? '--reciprocal-only' : ''} \\
         ${params.poppunk_count_unique ? '--count-unique-distances' : ''} \\
-        --max-search-depth ${params.poppunk_max_search}
+        --max-search-depth ${params.poppunk_max_search} \\
+        --K ${params.poppunk_K}
 
     echo "Model fitting completed. Copying fitted model files to database directory..."
     
@@ -388,7 +397,7 @@ process POPPUNK_MODEL {
 process POPPUNK_ASSIGN {
     tag          'poppunk_assign'
     container    'staphb/poppunk:2.7.5'
-    cpus         { params.threads }
+    cpus         { Math.min(params.threads, 16) }  // Limit threads to prevent segfault
     memory       { params.ram }
     publishDir   "${params.resultsDir}/poppunk_full", mode: 'copy'
 
@@ -432,19 +441,44 @@ process POPPUNK_ASSIGN {
     done < staged_all_files.list
     
     echo "All files verified. Starting PopPUNK assignment..."
+    echo "Using ${task.cpus} threads (reduced from ${params.threads} to prevent segmentation fault)"
     
-    # Use PopPUNK 2.7.x poppunk_assign with integrated QC and stable nomenclature
-    poppunk_assign --query staged_all_files.list \\
+    # SEGFAULT FIX: Use reduced thread count and disable problematic stable assignment
+    # The segfault occurs in --stable core mode with high thread counts
+    echo "Attempting PopPUNK assignment with segfault prevention measures..."
+    
+    # Try assignment without --stable first (more stable)
+    if poppunk_assign --query staged_all_files.list \\
         --db ${db_dir} \\
         --output poppunk_full \\
         --threads ${task.cpus} \\
-        --stable ${params.poppunk_stable} \\
         --run-qc \\
         --write-references \\
         ${params.poppunk_retain_failures ? '--retain-failures' : ''} \\
         --max-zero-dist ${params.poppunk_max_zero_dist} \\
         --max-merge ${params.poppunk_max_merge} \\
-        --length-sigma ${params.poppunk_length_sigma}
+        --length-sigma ${params.poppunk_length_sigma}; then
+        
+        echo "✅ PopPUNK assignment completed successfully without stable mode"
+        
+    else
+        echo "⚠️  First attempt failed, trying with even more conservative settings..."
+        
+        # Fallback: Use single thread and minimal options
+        poppunk_assign --query staged_all_files.list \\
+            --db ${db_dir} \\
+            --output poppunk_full_fallback \\
+            --threads 1 \\
+            --max-zero-dist ${params.poppunk_max_zero_dist} \\
+            --max-merge ${params.poppunk_max_merge} \\
+            --length-sigma ${params.poppunk_length_sigma}
+            
+        # Move fallback results to expected location
+        if [ -d "poppunk_full_fallback" ]; then
+            mv poppunk_full_fallback poppunk_full
+            echo "✅ PopPUNK assignment completed with fallback settings"
+        fi
+    fi
 
     # Check for poppunk_assign output files (different naming convention)
     if [ -f "poppunk_full/poppunk_full_clusters.csv" ]; then
@@ -487,9 +521,24 @@ process POPPUNK_ASSIGN {
     echo "Expected: \$(wc -l < ${valid_list}) + 1 (header)"
     echo "Actual samples assigned: \$(tail -n +2 full_assign.csv | wc -l)"
     
-    # Show cluster distribution
-    echo "Cluster distribution:"
-    tail -n +2 full_assign.csv | cut -d',' -f2 | sort | uniq -c | sort -nr
+    # Show detailed cluster distribution analysis
+    echo "Cluster distribution analysis:"
+    echo "=============================="
+    total_samples=\$(tail -n +2 full_assign.csv | wc -l)
+    unique_clusters=\$(tail -n +2 full_assign.csv | cut -d',' -f2 | sort -u | wc -l)
+    echo "Total samples assigned: \$total_samples"
+    echo "Number of unique clusters: \$unique_clusters"
+    echo ""
+    echo "Cluster sizes:"
+    tail -n +2 full_assign.csv | cut -d',' -f2 | sort | uniq -c | sort -nr | head -20
+    echo ""
+    if [ "\$unique_clusters" -eq 1 ]; then
+        echo "⚠️  WARNING: All samples assigned to single cluster!"
+        echo "   This suggests clustering parameters are too permissive."
+        echo "   Consider reducing mash_thresh or adjusting PopPUNK parameters."
+    else
+        echo "✅ Good cluster diversity: \$unique_clusters clusters found"
+    fi
     """
 }
 

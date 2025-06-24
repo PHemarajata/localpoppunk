@@ -1,0 +1,17 @@
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Building similarity graph from MASH distances...
+Graph built with 450 nodes and 71635 edges
+Found 6 connected components
+Component sizes: [445, 1, 1, 1, 1, 1]
+Largest component has 445 genomes
+Average component size: 75.0
+Component 1: 445 genomes -> selected 66 representatives
+Component 2: 1 genomes -> selected 1 representatives
+Component 3: 1 genomes -> selected 1 representatives
+Component 4: 1 genomes -> selected 1 representatives
+Component 5: 1 genomes -> selected 1 representatives
+Component 6: 1 genomes -> selected 1 representatives
+Total genomes selected for PopPUNK modeling: 71

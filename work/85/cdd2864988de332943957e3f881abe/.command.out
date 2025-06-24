@@ -1,0 +1,37 @@
+Successfully read cluster assignments: 784 samples
+
+============================================================
+PopPUNK Pipeline Summary
+============================================================
+Total samples processed: 784
+Number of clusters found: 27
+
+Cluster distribution:
+  Cluster 10: 8 samples (1.0%)
+  Cluster 11: 8 samples (1.0%)
+  Cluster 12: 6 samples (0.8%)
+  Cluster 13: 4 samples (0.5%)
+  Cluster 14: 4 samples (0.5%)
+  Cluster 15: 4 samples (0.5%)
+  Cluster 16: 4 samples (0.5%)
+  Cluster 17: 2 samples (0.3%)
+  Cluster 18: 2 samples (0.3%)
+  Cluster 19: 2 samples (0.3%)
+  Cluster 1_24: 467 samples (59.6%)
+  Cluster 2: 122 samples (15.6%)
+  Cluster 20: 2 samples (0.3%)
+  Cluster 21: 2 samples (0.3%)
+  Cluster 22: 2 samples (0.3%)
+  Cluster 23: 2 samples (0.3%)
+  Cluster 25: 2 samples (0.3%)
+  Cluster 26: 2 samples (0.3%)
+  Cluster 27: 2 samples (0.3%)
+  Cluster 28: 1 samples (0.1%)
+  Cluster 3: 30 samples (3.8%)
+  Cluster 4: 24 samples (3.1%)
+  Cluster 5: 42 samples (5.4%)
+  Cluster 6: 16 samples (2.0%)
+  Cluster 7: 8 samples (1.0%)
+  Cluster 8: 8 samples (1.0%)
+  Cluster 9: 8 samples (1.0%)
+============================================================
