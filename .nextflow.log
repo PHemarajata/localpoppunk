@@ -1,88 +1,88 @@
-Jun-24 06:01:30.385 [main] DEBUG nextflow.cli.Launcher - $> nextflow run poppunk_subsample_snp.nf -resume
-Jun-24 06:01:30.506 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.04.4
-Jun-24 06:01:30.534 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/peerah/.nextflow/plugins; core-plugins: nf-amazon@2.15.0,nf-azure@1.16.0,nf-cloudcache@0.4.3,nf-codecommit@0.2.3,nf-console@1.2.1,nf-google@1.21.0,nf-k8s@1.0.0,nf-tower@1.11.3,nf-wave@1.12.1
-Jun-24 06:01:30.560 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
-Jun-24 06:01:30.561 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
-Jun-24 06:01:30.565 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
-Jun-24 06:01:30.578 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
-Jun-24 06:01:30.605 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/peerah/localpoppunk/nextflow.config
-Jun-24 06:01:30.609 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/peerah/localpoppunk/nextflow.config
-Jun-24 06:01:30.682 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/peerah/.nextflow/secrets/store.json
-Jun-24 06:01:30.686 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@3aefae67] - activable => nextflow.secret.LocalSecretsProvider@3aefae67
-Jun-24 06:01:30.694 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
-Jun-24 06:01:31.311 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
-Jun-24 06:01:31.333 [main] DEBUG nextflow.cli.CmdRun - Launching `poppunk_subsample_snp.nf` [tiny_church] DSL2 - revision: cc5a50f6ee
-Jun-24 06:01:31.335 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
-Jun-24 06:01:31.335 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
-Jun-24 06:01:31.401 [main] DEBUG nextflow.Session - Session UUID: 33144ed5-af0d-4434-8c44-f97a450a9c6b
-Jun-24 06:01:31.402 [main] DEBUG nextflow.Session - Run name: tiny_church
-Jun-24 06:01:31.403 [main] DEBUG nextflow.Session - Executor pool size: 64
-Jun-24 06:01:31.413 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
-Jun-24 06:01:31.420 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=192; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
-Jun-24 06:01:31.443 [main] DEBUG nextflow.cli.CmdRun - 
+Jun-24 06:12:57.927 [main] DEBUG nextflow.cli.Launcher - $> nextflow run poppunk_subsample_snp.nf -resume
+Jun-24 06:12:58.048 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.04.4
+Jun-24 06:12:58.078 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/peerah/.nextflow/plugins; core-plugins: nf-amazon@2.15.0,nf-azure@1.16.0,nf-cloudcache@0.4.3,nf-codecommit@0.2.3,nf-console@1.2.1,nf-google@1.21.0,nf-k8s@1.0.0,nf-tower@1.11.3,nf-wave@1.12.1
+Jun-24 06:12:58.106 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Jun-24 06:12:58.107 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Jun-24 06:12:58.110 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Jun-24 06:12:58.125 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Jun-24 06:12:58.181 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/peerah/localpoppunk/nextflow.config
+Jun-24 06:12:58.185 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/peerah/localpoppunk/nextflow.config
+Jun-24 06:12:58.228 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/peerah/.nextflow/secrets/store.json
+Jun-24 06:12:58.232 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@3aefae67] - activable => nextflow.secret.LocalSecretsProvider@3aefae67
+Jun-24 06:12:58.241 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Jun-24 06:12:58.856 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
+Jun-24 06:12:58.880 [main] DEBUG nextflow.cli.CmdRun - Launching `poppunk_subsample_snp.nf` [crazy_celsius] DSL2 - revision: 7c00743d01
+Jun-24 06:12:58.882 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Jun-24 06:12:58.883 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Jun-24 06:12:58.950 [main] DEBUG nextflow.Session - Session UUID: 33144ed5-af0d-4434-8c44-f97a450a9c6b
+Jun-24 06:12:58.950 [main] DEBUG nextflow.Session - Run name: crazy_celsius
+Jun-24 06:12:58.951 [main] DEBUG nextflow.Session - Executor pool size: 64
+Jun-24 06:12:58.961 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Jun-24 06:12:58.969 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=192; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Jun-24 06:12:58.993 [main] DEBUG nextflow.cli.CmdRun - 
   Version: 25.04.4 build 5950
   Created: 16-06-2025 14:23 UTC 
   System: Linux 6.1.0-37-cloud-amd64
   Runtime: Groovy 4.0.26 on OpenJDK 64-Bit Server VM 17.0.10+7
   Encoding: UTF-8 (UTF-8)
-  Process: 51949@instance-20250623-122625 [10.128.0.26]
-  CPUs: 64 - Mem: 409.2 GB (400.6 GB) - Swap: 0 (0)
-Jun-24 06:01:31.487 [main] DEBUG nextflow.Session - Work-dir: /home/peerah/localpoppunk/work [ext2/ext3]
-Jun-24 06:01:31.488 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/peerah/localpoppunk/bin
-Jun-24 06:01:31.500 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
-Jun-24 06:01:31.513 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
-Jun-24 06:01:31.548 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
-Jun-24 06:01:31.583 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
-Jun-24 06:01:31.595 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 65; maxThreads: 1000
-Jun-24 06:01:31.696 [main] DEBUG nextflow.Session - Session start
-Jun-24 06:01:32.438 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
-Jun-24 06:01:32.449 [main] INFO  nextflow.script.BaseScript - ▶ FASTA input directory:  /home/peerah/contextual
-Jun-24 06:01:32.450 [main] INFO  nextflow.script.BaseScript - ▶ Results directory:      /home/peerah/contextual/results
-Jun-24 06:01:32.451 [main] INFO  nextflow.script.BaseScript - ▶ Threads / RAM:          48  /  200 GB
-Jun-24 06:01:32.649 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Jun-24 06:01:32.649 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 06:01:32.657 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
-Jun-24 06:01:32.665 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=64; memory=409.2 GB; capacity=64; pollInterval=100ms; dumpInterval=5m
-Jun-24 06:01:32.669 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
-Jun-24 06:01:32.701 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VALIDATE_FASTA': maxForks=0; fair=false; array=0
-Jun-24 06:01:32.790 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Jun-24 06:01:32.790 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 06:01:32.792 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'MASH_SKETCH': maxForks=0; fair=false; array=0
-Jun-24 06:01:32.799 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Jun-24 06:01:32.799 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 06:01:32.801 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'MASH_DIST': maxForks=0; fair=false; array=0
-Jun-24 06:01:32.808 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Jun-24 06:01:32.808 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 06:01:32.809 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'BIN_SUBSAMPLE': maxForks=0; fair=false; array=0
-Jun-24 06:01:32.819 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Jun-24 06:01:32.820 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 06:01:32.821 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'POPPUNK_MODEL': maxForks=0; fair=false; array=0
-Jun-24 06:01:32.832 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Jun-24 06:01:32.832 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 06:01:32.833 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'POPPUNK_ASSIGN': maxForks=0; fair=false; array=0
-Jun-24 06:01:32.841 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Jun-24 06:01:32.841 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 06:01:32.843 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'SUMMARY_REPORT': maxForks=0; fair=false; array=0
-Jun-24 06:01:32.851 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: MASH_DIST, MASH_SKETCH, SUMMARY_REPORT, POPPUNK_MODEL, BIN_SUBSAMPLE, POPPUNK_ASSIGN, VALIDATE_FASTA
-Jun-24 06:01:32.854 [main] DEBUG nextflow.Session - Igniting dataflow network (8)
-Jun-24 06:01:32.862 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VALIDATE_FASTA
-Jun-24 06:01:32.862 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MASH_SKETCH
-Jun-24 06:01:32.863 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MASH_DIST
-Jun-24 06:01:32.864 [PathVisitor-1] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: /home/peerah/contextual/; pattern: *.fasta; options: [checkIfExists:true]
-Jun-24 06:01:32.865 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > BIN_SUBSAMPLE
-Jun-24 06:01:32.866 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > POPPUNK_MODEL
-Jun-24 06:01:32.867 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > POPPUNK_ASSIGN
-Jun-24 06:01:32.868 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > SUMMARY_REPORT
-Jun-24 06:01:32.870 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
-  Script_921b15aca7594647: /home/peerah/localpoppunk/poppunk_subsample_snp.nf
-Jun-24 06:01:32.870 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
-Jun-24 06:01:32.870 [main] DEBUG nextflow.Session - Session await
-Jun-24 06:01:33.193 [Actor Thread 40] INFO  nextflow.processor.TaskProcessor - [19/5cf5b0] Cached process > VALIDATE_FASTA (validate_fasta)
-Jun-24 06:01:33.227 [Actor Thread 46] INFO  nextflow.script.BaseScript - 
+  Process: 55489@instance-20250623-122625 [10.128.0.26]
+  CPUs: 64 - Mem: 409.2 GB (400.4 GB) - Swap: 0 (0)
+Jun-24 06:12:59.037 [main] DEBUG nextflow.Session - Work-dir: /home/peerah/localpoppunk/work [ext2/ext3]
+Jun-24 06:12:59.038 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/peerah/localpoppunk/bin
+Jun-24 06:12:59.050 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Jun-24 06:12:59.064 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Jun-24 06:12:59.100 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Jun-24 06:12:59.136 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Jun-24 06:12:59.149 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 65; maxThreads: 1000
+Jun-24 06:12:59.250 [main] DEBUG nextflow.Session - Session start
+Jun-24 06:13:00.000 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Jun-24 06:13:00.012 [main] INFO  nextflow.script.BaseScript - ▶ FASTA input directory:  /home/peerah/contextual
+Jun-24 06:13:00.013 [main] INFO  nextflow.script.BaseScript - ▶ Results directory:      /home/peerah/contextual/results
+Jun-24 06:13:00.014 [main] INFO  nextflow.script.BaseScript - ▶ Threads / RAM:          48  /  200 GB
+Jun-24 06:13:00.223 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Jun-24 06:13:00.223 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-24 06:13:00.231 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Jun-24 06:13:00.239 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=64; memory=409.2 GB; capacity=64; pollInterval=100ms; dumpInterval=5m
+Jun-24 06:13:00.242 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Jun-24 06:13:00.277 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'VALIDATE_FASTA': maxForks=0; fair=false; array=0
+Jun-24 06:13:00.366 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Jun-24 06:13:00.366 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-24 06:13:00.368 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'MASH_SKETCH': maxForks=0; fair=false; array=0
+Jun-24 06:13:00.375 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Jun-24 06:13:00.375 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-24 06:13:00.377 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'MASH_DIST': maxForks=0; fair=false; array=0
+Jun-24 06:13:00.383 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Jun-24 06:13:00.384 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-24 06:13:00.385 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'BIN_SUBSAMPLE': maxForks=0; fair=false; array=0
+Jun-24 06:13:00.394 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Jun-24 06:13:00.395 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-24 06:13:00.396 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'POPPUNK_MODEL': maxForks=0; fair=false; array=0
+Jun-24 06:13:00.407 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Jun-24 06:13:00.408 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-24 06:13:00.409 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'POPPUNK_ASSIGN': maxForks=0; fair=false; array=0
+Jun-24 06:13:00.417 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Jun-24 06:13:00.417 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-24 06:13:00.419 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'SUMMARY_REPORT': maxForks=0; fair=false; array=0
+Jun-24 06:13:00.427 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: MASH_DIST, MASH_SKETCH, SUMMARY_REPORT, POPPUNK_MODEL, BIN_SUBSAMPLE, POPPUNK_ASSIGN, VALIDATE_FASTA
+Jun-24 06:13:00.430 [main] DEBUG nextflow.Session - Igniting dataflow network (8)
+Jun-24 06:13:00.438 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > VALIDATE_FASTA
+Jun-24 06:13:00.438 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MASH_SKETCH
+Jun-24 06:13:00.440 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MASH_DIST
+Jun-24 06:13:00.440 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > BIN_SUBSAMPLE
+Jun-24 06:13:00.441 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > POPPUNK_MODEL
+Jun-24 06:13:00.442 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > POPPUNK_ASSIGN
+Jun-24 06:13:00.442 [PathVisitor-1] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: /home/peerah/contextual/; pattern: *.fasta; options: [checkIfExists:true]
+Jun-24 06:13:00.443 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > SUMMARY_REPORT
+Jun-24 06:13:00.444 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_5c8543313c5a51ba: /home/peerah/localpoppunk/poppunk_subsample_snp.nf
+Jun-24 06:13:00.445 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Jun-24 06:13:00.445 [main] DEBUG nextflow.Session - Session await
+Jun-24 06:13:00.793 [Actor Thread 56] INFO  nextflow.processor.TaskProcessor - [19/5cf5b0] Cached process > VALIDATE_FASTA (validate_fasta)
+Jun-24 06:13:00.825 [Actor Thread 62] INFO  nextflow.script.BaseScript - 
 ==================================================
-Jun-24 06:01:33.230 [Actor Thread 46] INFO  nextflow.script.BaseScript - 📋 FASTA VALIDATION REPORT
-Jun-24 06:01:33.230 [Actor Thread 46] INFO  nextflow.script.BaseScript - ==================================================
-Jun-24 06:01:33.232 [Actor Thread 46] INFO  nextflow.script.BaseScript - FASTA Validation Report
+Jun-24 06:13:00.827 [Actor Thread 62] INFO  nextflow.script.BaseScript - 📋 FASTA VALIDATION REPORT
+Jun-24 06:13:00.828 [Actor Thread 62] INFO  nextflow.script.BaseScript - ==================================================
+Jun-24 06:13:00.829 [Actor Thread 62] INFO  nextflow.script.BaseScript - FASTA Validation Report
 ======================
 Total files processed: 450
 Valid files: 450
@@ -541,21 +541,23 @@ Valid files (with absolute paths):
   ✓ /home/peerah/contextual/IP-0149-5_S9_L001-SPAdes.fasta
 
 
-Jun-24 06:01:33.234 [Actor Thread 46] INFO  nextflow.script.BaseScript - ==================================================
+Jun-24 06:13:00.831 [Actor Thread 62] INFO  nextflow.script.BaseScript - ==================================================
 
-Jun-24 06:01:33.249 [Actor Thread 40] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=192; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
-Jun-24 06:01:33.382 [Actor Thread 60] INFO  nextflow.processor.TaskProcessor - [90/69b68d] Cached process > MASH_SKETCH (mash_sketch)
-Jun-24 06:01:33.393 [Actor Thread 65] INFO  nextflow.processor.TaskProcessor - [99/e956cf] Cached process > MASH_DIST (mash_dist)
-Jun-24 06:01:33.416 [Actor Thread 60] INFO  nextflow.processor.TaskProcessor - [cf/9c0e94] Cached process > BIN_SUBSAMPLE (bin_subsample)
-Jun-24 06:01:33.479 [Actor Thread 65] INFO  nextflow.processor.TaskProcessor - [7f/99b557] Cached process > POPPUNK_MODEL (poppunk_model)
-Jun-24 06:01:33.690 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
-Jun-24 06:01:33.693 [Task submitter] INFO  nextflow.Session - [48/2af5da] Submitted process > POPPUNK_ASSIGN (poppunk_assign)
-Jun-24 06:01:52.468 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: POPPUNK_ASSIGN (poppunk_assign); status: COMPLETED; exit: 1; error: -; workDir: /home/peerah/localpoppunk/work/48/2af5da24b2aeebaed2ecfb47083ab9]
-Jun-24 06:01:52.469 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=192; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
-Jun-24 06:01:52.479 [TaskFinalizer-1] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
-  task: name=POPPUNK_ASSIGN (poppunk_assign); work-dir=/home/peerah/localpoppunk/work/48/2af5da24b2aeebaed2ecfb47083ab9
+Jun-24 06:13:00.844 [Actor Thread 56] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=192; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Jun-24 06:13:00.964 [Actor Thread 62] INFO  nextflow.processor.TaskProcessor - [90/69b68d] Cached process > MASH_SKETCH (mash_sketch)
+Jun-24 06:13:00.975 [Actor Thread 64] INFO  nextflow.processor.TaskProcessor - [99/e956cf] Cached process > MASH_DIST (mash_dist)
+Jun-24 06:13:01.003 [Actor Thread 54] INFO  nextflow.processor.TaskProcessor - [cf/9c0e94] Cached process > BIN_SUBSAMPLE (bin_subsample)
+Jun-24 06:13:01.210 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-24 06:13:01.213 [Task submitter] INFO  nextflow.Session - [b8/2b89d5] Submitted process > POPPUNK_MODEL (poppunk_model)
+Jun-24 06:13:21.343 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: POPPUNK_MODEL (poppunk_model); status: COMPLETED; exit: 0; error: -; workDir: /home/peerah/localpoppunk/work/b8/2b89d55c001dbb8665783951798e2a]
+Jun-24 06:13:21.344 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=192; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Jun-24 06:13:21.442 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-24 06:13:21.443 [Task submitter] INFO  nextflow.Session - [ee/6068cb] Submitted process > POPPUNK_ASSIGN (poppunk_assign)
+Jun-24 06:13:40.570 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: POPPUNK_ASSIGN (poppunk_assign); status: COMPLETED; exit: 1; error: -; workDir: /home/peerah/localpoppunk/work/ee/6068cba62ffa4b8a5c0669148d002b]
+Jun-24 06:13:40.577 [TaskFinalizer-2] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
+  task: name=POPPUNK_ASSIGN (poppunk_assign); work-dir=/home/peerah/localpoppunk/work/ee/6068cba62ffa4b8a5c0669148d002b
   error [nextflow.exception.ProcessFailedException]: Process `POPPUNK_ASSIGN (poppunk_assign)` terminated with an error exit status (1)
-Jun-24 06:01:52.501 [TaskFinalizer-1] ERROR nextflow.processor.TaskProcessor - Error executing process > 'POPPUNK_ASSIGN (poppunk_assign)'
+Jun-24 06:13:40.598 [TaskFinalizer-2] ERROR nextflow.processor.TaskProcessor - Error executing process > 'POPPUNK_ASSIGN (poppunk_assign)'
 
 Caused by:
   Process `POPPUNK_ASSIGN (poppunk_assign)` terminated with an error exit status (1)
@@ -675,24 +677,6 @@ Command output:
   poppunk_full/poppunk_full
 
 Command error:
-  Progress (CPU): 98.7%
-  Progress (CPU): 98.8%
-  Progress (CPU): 98.9%
-  Progress (CPU): 99.0%
-  Progress (CPU): 99.1%
-  Progress (CPU): 99.2%
-  Progress (CPU): 99.3%
-  Progress (CPU): 99.4%
-  Progress (CPU): 99.5%
-  Progress (CPU): 99.6%
-  Progress (CPU): 99.7%
-  Progress (CPU): 99.8%
-  Progress (CPU): 99.9%
-  Progress (CPU): 100.0%
-  Progress (CPU): 100.0%
-  Progress (CPU): 100.0%
-  Progress (CPU): 100.0%
-  Progress (CPU): 100.0%
   Progress (CPU): 100.0%
   Running QC on distance matrix
   Running QC on distances
@@ -701,47 +685,65 @@ Command error:
   Using cutoff for proportion of zero distances: 1.0
   Selected type isolate for distance QC is IE-0001_S6_L001-SPAdes
   Loading network from poppunk_db/poppunk_db_graph.gt
+  Network loaded: 135 samples
+  Loading previous cluster assignments from poppunk_db/poppunk_db_clusters.csv
+  Assigning distances with BGMM model
+  poppunk_full/poppunk_full
+  
+    0%|          | 0/1 [00:00<?, ?it/s]
+  100%|██████████| 1/1 [00:00<00:00, 15.00it/s]
+  Running QC on model assignments
   Traceback (most recent call last):
     File "/opt/conda/envs/poppunk-env/bin/poppunk_assign", line 11, in <module>
       sys.exit(main())
                ^^^^^^
     File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/assign.py", line 217, in main
-  poppunk_full/poppunk_full
       assign_query(dbFuncs,
     File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/assign.py", line 303, in assign_query
       isolateClustering = assign_query_hdf5(dbFuncs,
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/assign.py", line 574, in assign_query_hdf5
-      fetchNetwork(prev_clustering,
-    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/network.py", line 109, in fetchNetwork
-      genomeNetwork = load_network_file(network_file, use_gpu = use_gpu)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/network.py", line 145, in load_network_file
-      genomeNetwork = gt.load_graph(fn)
-                      ^^^^^^^^^^^^^^^^^
-    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/graph_tool/__init__.py", line 3767, in load_graph
-      g.load(file_name, fmt, ignore_vp, ignore_ep, ignore_gp)
-    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/graph_tool/__init__.py", line 3278, in load
-      with open(file_name) as f: # throw the appropriate exception
-           ^^^^^^^^^^^^^^^
-  FileNotFoundError: [Errno 2] No such file or directory: 'poppunk_db/poppunk_db_graph.gt'
+    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/assign.py", line 604, in assign_query_hdf5
+      frozenset(qcQueryAssignments(rNames,
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/qc.py", line 350, in qcQueryAssignments
+      clusters = readIsolateTypeFromCsv(original_cluster_file, return_dict=True)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/PopPUNK/utils.py", line 290, in readIsolateTypeFromCsv
+      clustersCsv = pd.read_csv(clustCSV, index_col = 0, quotechar='"')
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+      return _read(filepath_or_buffer, kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 620, in _read
+      parser = TextFileReader(filepath_or_buffer, **kwds)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1620, in __init__
+      self._engine = self._make_engine(f, self.engine)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1880, in _make_engine
+      self.handles = get_handle(
+                     ^^^^^^^^^^^
+    File "/opt/conda/envs/poppunk-env/lib/python3.12/site-packages/pandas/io/common.py", line 873, in get_handle
+      handle = open(
+               ^^^^^
+  FileNotFoundError: [Errno 2] No such file or directory: 'poppunk_db/poppunk_db_clusters.csv'
 
 Work dir:
-  /home/peerah/localpoppunk/work/48/2af5da24b2aeebaed2ecfb47083ab9
+  /home/peerah/localpoppunk/work/ee/6068cba62ffa4b8a5c0669148d002b
 
 Container:
   staphb/poppunk:2.7.5
 
-Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
-Jun-24 06:01:52.505 [main] DEBUG nextflow.Session - Session await > all processes finished
-Jun-24 06:01:52.509 [TaskFinalizer-1] INFO  nextflow.Session - Execution cancelled -- Finishing pending tasks before exit
-Jun-24 06:01:52.521 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
-Jun-24 06:01:52.521 [main] DEBUG nextflow.Session - Session await > all barriers passed
-Jun-24 06:01:52.524 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
-Jun-24 06:01:52.525 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'PublishDir' shutdown completed (hard=false)
-Jun-24 06:01:52.531 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=1; ignoredCount=0; cachedCount=5; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=0ms; failedDuration=14m 57s; cachedDuration=24m 49s;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=48; peakMemory=200 GB; ]
-Jun-24 06:01:52.531 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
-Jun-24 06:01:53.161 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
-Jun-24 06:01:53.342 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
-Jun-24 06:01:53.355 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
-Jun-24 06:01:53.356 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
+Tip: you can try to figure out what's wrong by changing to the process work dir and showing the script file named `.command.sh`
+Jun-24 06:13:40.602 [main] DEBUG nextflow.Session - Session await > all processes finished
+Jun-24 06:13:40.603 [TaskFinalizer-2] INFO  nextflow.Session - Execution cancelled -- Finishing pending tasks before exit
+Jun-24 06:13:40.614 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Jun-24 06:13:40.615 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Jun-24 06:13:40.617 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Jun-24 06:13:40.619 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'PublishDir' shutdown completed (hard=false)
+Jun-24 06:13:40.625 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=1; failedCount=1; ignoredCount=0; cachedCount=4; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=15m 1s; failedDuration=15m 13s; cachedDuration=9m 50s;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=48; peakMemory=200 GB; ]
+Jun-24 06:13:40.625 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
+Jun-24 06:13:41.257 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
+Jun-24 06:13:41.430 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Jun-24 06:13:41.444 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Jun-24 06:13:41.445 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

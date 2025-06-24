@@ -314,15 +314,28 @@ process POPPUNK_MODEL {
             echo "✓ Created poppunk_db_fit.npz from poppunk_fit_fit.npz"
         fi
         
+        # Copy the graph file with the correct name - CRITICAL for poppunk_assign
+        if [ -f "poppunk_db/poppunk_fit_graph.gt" ]; then
+            cp poppunk_db/poppunk_fit_graph.gt poppunk_db/poppunk_db_graph.gt
+            echo "✓ Created poppunk_db_graph.gt from poppunk_fit_graph.gt"
+        fi
+        
         echo "Files in poppunk_db after copying:"
         ls -la poppunk_db/
         
-        # Verify the critical model file exists
+        # Verify the critical model files exist
         if [ -f "poppunk_db/poppunk_db_fit.pkl" ]; then
             echo "✓ Found fitted model file: poppunk_db_fit.pkl"
         else
             echo "⚠ Model .pkl file not found. Available files:"
             ls -la poppunk_db/*.pkl 2>/dev/null || echo "No .pkl files found"
+        fi
+        
+        if [ -f "poppunk_db/poppunk_db_graph.gt" ]; then
+            echo "✓ Found graph file: poppunk_db_graph.gt"
+        else
+            echo "⚠ Graph file not found. Available graph files:"
+            ls -la poppunk_db/*.gt 2>/dev/null || echo "No .gt files found"
         fi
     else
         echo "ERROR: poppunk_fit directory not found"
