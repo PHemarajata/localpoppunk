@@ -2,3 +2,8 @@
 2025-06-23 17:27:44	7.7s	determined_liskov	OK	92541c4c6b4c3ea7f6f5887782831f36	de00e730-c364-4201-935a-b78d1dc8ca69	nextflow run poppunk_subsample_snp.nf -resume
 2025-06-23 17:51:03	3.4s	focused_wilson	OK	92541c4c6b4c3ea7f6f5887782831f36	de00e730-c364-4201-935a-b78d1dc8ca69	nextflow run poppunk_subsample_snp.nf -resume
 2025-06-23 17:52:19	1m 1s	romantic_khorana	OK	92541c4c6b4c3ea7f6f5887782831f36	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf
+2025-06-24 03:42:05	3s	stupefied_brattain	OK	92541c4c6b4c3ea7f6f5887782831f36	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 03:56:56	36.4s	kickass_waddington	ERR	7e5f2d50c3958a092936519b1a56b730	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 04:01:10	24.5s	serene_colden	ERR	0719a9afe3ed83472f1642feb35d2de8	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 04:03:31	4.2s	deadly_brahmagupta	ERR	0719a9afe3ed83472f1642feb35d2de8	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 04:03:59	3.6s	drunk_faraday	ERR	0719a9afe3ed83472f1642feb35d2de8	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume

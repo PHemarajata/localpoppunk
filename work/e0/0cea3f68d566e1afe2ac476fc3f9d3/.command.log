@@ -1,0 +1,36 @@
+Assigning 450 genomes to PopPUNK clusters...
+First few files:
+IP-0050-5_S10_L001-SPAdes	IP-0050-5_S10_L001-SPAdes.fasta
+IP-0100-8_S1_L001-SPAdes	IP-0100-8_S1_L001-SPAdes.fasta
+Burkholderia_pseudomallei_44W_S64_GCF_014713025.1_Laos	Burkholderia_pseudomallei_44W_S64_GCF_014713025.1_Laos.fasta
+IP-0201-4_S6-SPAdes	IP-0201-4_S6-SPAdes.fasta
+GCA_963565015.1	GCA_963565015.1.fasta
+Verifying staged files exist...
+All files verified. Starting PopPUNK assignment...
+PopPUNK (POPulation Partitioning Using Nucleotide Kmers)
+	(with backend: sketchlib v2.1.1
+	 sketchlib: /opt/conda/envs/poppunk-env/lib/python3.10/site-packages/pp_sketchlib.cpython-310-x86_64-linux-gnu.so)
+
+Graph-tools OpenMP parallelisation enabled: with 48 threads
+Mode: Using previous model with a reference database
+
+Loading BGMM 2D Gaussian model
+Completed model loading
+Loaded previous model of type: bgmm
+Assigning distances with BGMM model
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 39.59it/s]
+Network summary:
+	Components				25
+	Density					0.0821
+	Transitivity				0.9637
+	Mean betweenness			0.1288
+	Weighted-mean betweenness		0.0768
+	Score					0.8845
+	Score (w/ betweenness)			0.7705
+	Score (w/ weighted-betweenness)		0.8166
+Removing 59 sequences
+
+Done
+Found poppunk_full_clusters.csv in poppunk_full/
+PopPUNK assignment completed successfully!
+Final assignment file contains 91 lines (including header)

@@ -212,7 +212,8 @@ with open('subset.list','w') as out:
     total_selected = 0
     for i, comp in enumerate(nx.connected_components(G)):
         comp = list(comp)
-        k = min(45, max(3, len(comp)//10))
+        # More generous subsampling: take at least 20% of each component, minimum 10, maximum 100
+        k = min(100, max(10, len(comp)//5))
         k = min(k, len(comp))
         if k > 0:
             selected = random.sample(comp, k)
@@ -363,7 +364,7 @@ process POPPUNK_ASSIGN {
 
     input:
     path db_dir
-    path list_file
+    path valid_list
     path fasta_files
 
     output:
@@ -371,12 +372,33 @@ process POPPUNK_ASSIGN {
 
     script:
     """
-    # Create a staged file list for all FASTA files
-    ls *.fasta > staged_all_files.list
+    # Create a staged file list for all valid FASTA files using sample names
+    > staged_all_files.list
+    while IFS= read -r file_path; do
+        basename_file=\$(basename "\$file_path")
+        if [ -f "\$basename_file" ]; then
+            # Create sample name from filename (remove .fasta extension)
+            sample_name=\$(basename "\$basename_file" .fasta)
+            echo -e "\$sample_name\\t\$basename_file" >> staged_all_files.list
+        else
+            echo "WARNING: Staged file not found: \$basename_file"
+        fi
+    done < ${valid_list}
     
     echo "Assigning \$(wc -l < staged_all_files.list) genomes to PopPUNK clusters..."
     echo "First few files:"
     head -5 staged_all_files.list
+    
+    # Verify all files exist
+    echo "Verifying staged files exist..."
+    while IFS=\$'\\t' read -r sample_name file_name; do
+        if [ ! -f "\$file_name" ]; then
+            echo "ERROR: File not found: \$file_name"
+            exit 1
+        fi
+    done < staged_all_files.list
+    
+    echo "All files verified. Starting PopPUNK assignment..."
     
     poppunk --use-model --ref-db ${db_dir} \\
         --r-files staged_all_files.list \\
@@ -408,6 +430,92 @@ process POPPUNK_ASSIGN {
     fi
     
     echo "PopPUNK assignment completed successfully!"
+    echo "Final assignment file contains \$(wc -l < full_assign.csv) lines (including header)"
+    """
+}
+
+/* ──────────────────────────────────────────────────────────
+ * 6 ▸ Generate summary report
+ * ────────────────────────────────────────────────────────── */
+process SUMMARY_REPORT {
+    tag          'summary_report'
+    container    'python:3.9'
+    publishDir   "${params.resultsDir}/summary", mode: 'copy'
+
+    input:
+    path cluster_csv
+    path validation_report
+
+    output:
+    path 'pipeline_summary.txt'
+
+    script:
+    """
+    python - << 'PY'
+import pandas as pd
+from collections import Counter
+
+# Read cluster assignments
+try:
+    df = pd.read_csv('${cluster_csv}')
+    print(f"Successfully read cluster assignments: {len(df)} samples")
+    
+    # Count clusters
+    if 'Cluster' in df.columns:
+        cluster_col = 'Cluster'
+    elif 'cluster' in df.columns:
+        cluster_col = 'cluster'
+    else:
+        cluster_col = df.columns[1]  # Assume second column is cluster
+    
+    cluster_counts = df[cluster_col].value_counts().sort_index()
+    total_samples = len(df)
+    num_clusters = len(cluster_counts)
+    
+    # Read validation report
+    with open('${validation_report}', 'r') as f:
+        validation_content = f.read()
+    
+    # Generate summary
+    with open('pipeline_summary.txt', 'w') as f:
+        f.write("="*60 + "\\n")
+        f.write("PopPUNK Pipeline Summary Report\\n")
+        f.write("="*60 + "\\n\\n")
+        
+        f.write("VALIDATION RESULTS:\\n")
+        f.write("-"*20 + "\\n")
+        f.write(validation_content + "\\n\\n")
+        
+        f.write("CLUSTERING RESULTS:\\n")
+        f.write("-"*20 + "\\n")
+        f.write(f"Total samples processed: {total_samples}\\n")
+        f.write(f"Number of clusters found: {num_clusters}\\n\\n")
+        
+        f.write("Cluster distribution:\\n")
+        for cluster, count in cluster_counts.items():
+            percentage = (count / total_samples) * 100
+            f.write(f"  Cluster {cluster}: {count} samples ({percentage:.1f}%)\\n")
+        
+        f.write("\\n" + "="*60 + "\\n")
+        
+        # Also print to stdout
+        print(f"\\n{'='*60}")
+        print("PopPUNK Pipeline Summary")
+        print(f"{'='*60}")
+        print(f"Total samples processed: {total_samples}")
+        print(f"Number of clusters found: {num_clusters}")
+        print("\\nCluster distribution:")
+        for cluster, count in cluster_counts.items():
+            percentage = (count / total_samples) * 100
+            print(f"  Cluster {cluster}: {count} samples ({percentage:.1f}%)")
+        print(f"{'='*60}")
+
+except Exception as e:
+    print(f"Error processing results: {e}")
+    with open('pipeline_summary.txt', 'w') as f:
+        f.write(f"Error generating summary: {e}\\n")
+        f.write("Please check the cluster assignment file format.\\n")
+PY
     """
 }
 
@@ -444,7 +552,10 @@ workflow {
     dist_ch    = MASH_DIST(sketch_out.msh)
     subset_ch  = BIN_SUBSAMPLE(dist_ch)
     model_out  = POPPUNK_MODEL(subset_ch, valid_files_collected)
-    final_csv  = POPPUNK_ASSIGN(model_out.db, sketch_out.list, valid_files_collected)
+    final_csv  = POPPUNK_ASSIGN(model_out.db, validation_out.valid_list, valid_files_collected)
 
+    // Generate summary report
+    SUMMARY_REPORT(final_csv, validation_out.report)
+    
     final_csv.view { p -> "✅ PopPUNK assignment written: ${p}" }
 }
