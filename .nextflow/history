@@ -7,3 +7,9 @@
 2025-06-24 04:01:10	24.5s	serene_colden	ERR	0719a9afe3ed83472f1642feb35d2de8	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
 2025-06-24 04:03:31	4.2s	deadly_brahmagupta	ERR	0719a9afe3ed83472f1642feb35d2de8	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
 2025-06-24 04:03:59	3.6s	drunk_faraday	ERR	0719a9afe3ed83472f1642feb35d2de8	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 04:37:44	1m 17s	nauseous_coulomb	ERR	9cb9f517e10daf2b235ff42459b5fd19	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 04:47:40	13.8s	hopeful_hopper	ERR	212e03bc1c31f35d3e089fca743ee5ef	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 05:06:57	3.7s	chaotic_solvay	ERR	552d07e7c66bd6f957669e350b1cc924	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 05:07:29	4s	pedantic_sax	ERR	552d07e7c66bd6f957669e350b1cc924	0ffd5117-b0ce-4182-a655-a7dbaebffdca	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 05:07:39	4s	hopeful_cori	ERR	552d07e7c66bd6f957669e350b1cc924	fefc7dc4-4330-4bbc-b63e-cd21c69bba73	nextflow run poppunk_subsample_snp.nf
+2025-06-24 05:12:08	1m 16s	hungry_rosalind	ERR	9cb9f517e10daf2b235ff42459b5fd19	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf

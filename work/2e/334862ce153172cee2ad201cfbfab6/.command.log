@@ -1,0 +1,9 @@
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Building similarity graph from MASH distances...
+Graph built with 450 nodes and 101475 edges
+Found 1 connected components
+Component 1: 450 genomes -> selected 135 representatives
+Total genomes selected for PopPUNK modeling: 135

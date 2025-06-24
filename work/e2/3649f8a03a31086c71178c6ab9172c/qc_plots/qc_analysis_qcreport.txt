@@ -1,0 +1,5 @@
+GCA_963571905_1	Failed distance QC (too many zeros)
+IP-0146-1_S6_L001-SPAdes	Failed distance QC (too many zeros)
+IP-0041-4_S1_L001-SPAdes	Failed distance QC (too many zeros)
+GCA_963565015_1	Failed distance QC (too many zeros)
+ERS008816	Failed distance QC (too many zeros)

@@ -1,0 +1,22 @@
+PopPUNK (POPulation Partitioning Using Nucleotide Kmers)
+	(with backend: sketchlib v2.1.4
+	 sketchlib: /opt/conda/envs/poppunk-env/lib/python3.12/site-packages/pp_sketchlib.cpython-312-x86_64-linux-gnu.so)
+
+Graph-tools OpenMP parallelisation enabled: with 62 threads
+Running QC on sketches
+Using proportion cutoff for ambiguous bases: 0.1
+Using standard deviation for length cutoff: 5
+0 samples failed
+Running QC on distances
+Using cutoff for core distances: 0.1
+Using cutoff for accessory distances: 0.5
+Using cutoff for proportion of zero distances: 0.05
+Selected type isolate for distance QC is Burkholderia_pseudomallei_316a_GCF_001980725_1_Thailand
+5 samples failed
+130 samples passed QC
+Removing 5 sequences
+No network file found for pruning
+Recalculating random matches with strand_preserved = False
+Calculating random match chances using Monte Carlo
+
+Done
