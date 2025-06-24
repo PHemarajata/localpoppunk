@@ -320,6 +320,12 @@ process POPPUNK_MODEL {
             echo "✓ Created poppunk_db_graph.gt from poppunk_fit_graph.gt"
         fi
         
+        # Copy the cluster file with the correct name - CRITICAL for poppunk_assign
+        if [ -f "poppunk_db/poppunk_fit_clusters.csv" ]; then
+            cp poppunk_db/poppunk_fit_clusters.csv poppunk_db/poppunk_db_clusters.csv
+            echo "✓ Created poppunk_db_clusters.csv from poppunk_fit_clusters.csv"
+        fi
+        
         echo "Files in poppunk_db after copying:"
         ls -la poppunk_db/
         
@@ -336,6 +342,13 @@ process POPPUNK_MODEL {
         else
             echo "⚠ Graph file not found. Available graph files:"
             ls -la poppunk_db/*.gt 2>/dev/null || echo "No .gt files found"
+        fi
+        
+        if [ -f "poppunk_db/poppunk_db_clusters.csv" ]; then
+            echo "✓ Found cluster file: poppunk_db_clusters.csv"
+        else
+            echo "⚠ Cluster file not found. Available cluster files:"
+            ls -la poppunk_db/*clusters*.csv 2>/dev/null || echo "No cluster CSV files found"
         fi
     else
         echo "ERROR: poppunk_fit directory not found"

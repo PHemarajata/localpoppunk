@@ -17,3 +17,4 @@
 2025-06-24 05:51:43	22.1s	high_jepsen	ERR	ed5665727a2b0d840475cd20293c14a7	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf -resume
 2025-06-24 06:01:31	22.3s	tiny_church	ERR	cc5a50f6ee0fce284b6d8b0b4e594d89	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf -resume
 2025-06-24 06:12:59	42.4s	crazy_celsius	ERR	7c00743d014f89a9d8591ebb254fb1ed	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf -resume
+2025-06-24 06:23:15	49.2s	sick_lagrange	ERR	a866920e84d0c9b8afced7a7892168cc	33144ed5-af0d-4434-8c44-f97a450a9c6b	nextflow run poppunk_subsample_snp.nf -resume
